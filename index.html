@@ -1,14 +1,201 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Noor AI Studio</title>
+
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+background:#0b0b0b;
+color:white;
+text-align:center;
+}
+
+header{
+padding:20px;
+font-size:28px;
+font-weight:bold;
+background:black;
+letter-spacing:3px;
+}
+
+.container{
+padding:20px;
+}
+
+textarea{
+width:90%;
+height:140px;
+background:#1a1a1a;
+border:none;
+color:white;
+padding:15px;
+border-radius:10px;
+font-size:16px;
+}
+
+button{
+margin:10px;
+padding:12px 25px;
+font-size:16px;
+border:none;
+border-radius:8px;
+background:#00ffa2;
+cursor:pointer;
+font-weight:bold;
+}
+
+button:hover{
+background:#00cc80;
+}
+
+#sceneList{
+margin-top:20px;
+padding:10px;
+background:#1a1a1a;
+border-radius:10px;
+}
+
+video{
+width:90%;
+max-width:650px;
+margin-top:20px;
+border-radius:10px;
+background:black;
+}
+
+canvas{
+display:none;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>NOOR AI STUDIO</header>
+
 <div class="container">
 
-<h1>Noor AI Studio</h1>
+<p>Write story (each line = scene)</p>
 
-<textarea id="story" placeholder="Write story (each line = scene)"></textarea>
+<textarea id="story"></textarea>
 
-<button onclick="startAI()">Start</button>
+<br>
+
+<button onclick="generateScenes()">Generate Scenes</button>
+<button onclick="startVideo()">Create Cinematic Video</button>
 <button onclick="downloadVideo()">Download</button>
 
-<video id="videoPlayer" controls autoplay></video>
+<div id="sceneList"></div>
 
-<canvas id="canvas" width="600" height="400" style="display:none"></canvas>
+<video id="videoPlayer" controls></video>
+
+<canvas id="canvas" width="640" height="360"></canvas>
 
 </div>
+
+<script>
+
+let scenes=[]
+
+function generateScenes(){
+
+let text=document.getElementById("story").value
+scenes=text.split("\n")
+
+let html=""
+
+for(let i=0;i<scenes.length;i++){
+
+html+="Scene "+(i+1)+" : "+scenes[i]+"<br>"
+
+}
+
+document.getElementById("sceneList").innerHTML=html
+
+}
+
+function speak(text){
+
+let speech=new SpeechSynthesisUtterance(text)
+speech.rate=0.9
+speech.pitch=1
+speech.lang="en-US"
+
+speechSynthesis.speak(speech)
+
+}
+
+function startVideo(){
+
+let canvas=document.getElementById("canvas")
+let ctx=canvas.getContext("2d")
+
+let stream=canvas.captureStream()
+let recorder=new MediaRecorder(stream)
+
+let chunks=[]
+
+recorder.ondataavailable=e=>chunks.push(e.data)
+
+recorder.onstop=e=>{
+
+let blob=new Blob(chunks,{type:"video/webm"})
+document.getElementById("videoPlayer").src=URL.createObjectURL(blob)
+window.videoBlob=blob
+
+}
+
+recorder.start()
+
+let i=0
+
+function draw(){
+
+ctx.fillStyle="black"
+ctx.fillRect(0,0,640,360)
+
+ctx.fillStyle="white"
+ctx.font="30px Arial"
+
+ctx.fillText(scenes[i],40,180)
+
+speak(scenes[i])
+
+i++
+
+if(i<scenes.length){
+
+setTimeout(draw,3000)
+
+}else{
+
+setTimeout(()=>recorder.stop(),3000)
+
+}
+
+}
+
+draw()
+
+}
+
+function downloadVideo(){
+
+let a=document.createElement("a")
+a.href=URL.createObjectURL(window.videoBlob)
+a.download="noor_ai_video.webm"
+a.click()
+
+}
+
+</script>
+
+</body>
+  </html>
