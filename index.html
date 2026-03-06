@@ -4,7 +4,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Noor AI Studio ULTRA</title>
+<title>Noor AI Studio v3</title>
 
 <style>
 
@@ -19,7 +19,7 @@ text-align:center;
 header{
 background:black;
 padding:20px;
-font-size:28px;
+font-size:26px;
 font-weight:bold;
 letter-spacing:3px;
 }
@@ -49,30 +49,29 @@ cursor:pointer;
 font-weight:bold;
 }
 
-button:hover{
-background:#00cc88;
-}
-
 #sceneList{
 margin-top:20px;
+}
+
+.scene{
+margin:10px;
 padding:10px;
 background:#1a1a1a;
 border-radius:10px;
 }
 
-.scene{
-margin:8px;
-padding:8px;
-background:#2a2a2a;
-border-radius:6px;
+img{
+width:90%;
+max-width:500px;
+border-radius:10px;
+margin-top:10px;
 }
 
-video{
+#cinema{
 width:90%;
-max-width:650px;
+max-width:600px;
 margin-top:20px;
 border-radius:10px;
-background:black;
 }
 
 </style>
@@ -81,7 +80,7 @@ background:black;
 
 <body>
 
-<header>NOOR AI STUDIO ULTRA</header>
+<header>NOOR AI STUDIO v3 CINEMATIC</header>
 
 <div class="container">
 
@@ -91,25 +90,22 @@ background:black;
 
 <button onclick="generateScenes()">Generate Scenes</button>
 
+<button onclick="generateImages()">AI Images</button>
+
 <button onclick="playVoice()">AI Voice</button>
 
-<button onclick="generateVideo()">Generate Video</button>
-
-<button onclick="downloadVideo()">Download</button>
+<button onclick="playCinema()">Play Cinematic</button>
 
 <div id="sceneList"></div>
 
-<video id="videoPlayer" controls></video>
-
-<canvas id="canvas" width="800" height="450" style="display:none"></canvas>
+<img id="cinema">
 
 </div>
 
 <script>
 
 let scenes=[]
-let recorder
-let chunks=[]
+let images=[]
 
 function generateScenes(){
 
@@ -126,7 +122,40 @@ if(s.trim()=="") return
 
 let div=document.createElement("div")
 div.className="scene"
-div.innerText="Scene "+(i+1)+": "+s
+div.innerHTML="Scene "+(i+1)+" : "+s
+
+box.appendChild(div)
+
+})
+
+}
+
+function generateImages(){
+
+let box=document.getElementById("sceneList")
+box.innerHTML=""
+
+images=[]
+
+scenes.forEach((s,i)=>{
+
+if(s.trim()=="") return
+
+let prompt=s+" cinematic movie scene"
+
+let url="https://image.pollinations.ai/prompt/"+encodeURIComponent(prompt)
+
+images.push(url)
+
+let div=document.createElement("div")
+div.className="scene"
+
+let img=document.createElement("img")
+img.src=url
+
+div.innerHTML="Scene "+(i+1)+" : "+s
+
+div.appendChild(img)
 
 box.appendChild(div)
 
@@ -147,72 +176,26 @@ speechSynthesis.speak(speech)
 
 }
 
-function generateVideo(){
-
-let canvas=document.getElementById("canvas")
-let ctx=canvas.getContext("2d")
-
-let stream=canvas.captureStream()
-
-recorder=new MediaRecorder(stream)
-
-chunks=[]
-
-recorder.ondataavailable=e=>chunks.push(e.data)
-
-recorder.onstop=e=>{
-
-let blob=new Blob(chunks,{type:"video/webm"})
-
-window.videoBlob=blob
-
-let url=URL.createObjectURL(blob)
-
-document.getElementById("videoPlayer").src=url
-
-}
-
-recorder.start()
+function playCinema(){
 
 let i=0
+let screen=document.getElementById("cinema")
 
-function draw(){
+function show(){
 
-ctx.fillStyle="black"
-ctx.fillRect(0,0,800,450)
-
-ctx.fillStyle="white"
-ctx.font="30px Arial"
-
-ctx.fillText(scenes[i],50,200)
+screen.src=images[i]
 
 i++
 
-if(i<scenes.length){
+if(i<images.length){
 
-setTimeout(draw,3000)
-
-}else{
-
-setTimeout(()=>recorder.stop(),3000)
+setTimeout(show,3000)
 
 }
 
 }
 
-draw()
-
-}
-
-function downloadVideo(){
-
-let a=document.createElement("a")
-
-a.href=URL.createObjectURL(window.videoBlob)
-
-a.download="noor_ai_video.webm"
-
-a.click()
+show()
 
 }
 
