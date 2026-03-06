@@ -4,7 +4,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Noor AI Studio ULTRA v5 </title>
+<title>Noor AI Studio</title>
 
 <style>
 
@@ -17,11 +17,9 @@ text-align:center;
 }
 
 header{
-padding:25px;
-font-size:28px;
+padding:20px;
+font-size:22px;
 font-weight:bold;
-letter-spacing:3px;
-background:black;
 }
 
 .container{
@@ -30,35 +28,37 @@ padding:20px;
 
 textarea{
 width:90%;
-height:140px;
+height:120px;
 background:#1a1a1a;
 border:none;
-color:white;
+border-radius:10px;
 padding:15px;
-border-radius:12px;
+color:white;
 font-size:16px;
 }
 
 button{
-
 margin-top:20px;
-padding:15px 35px;
+padding:14px 30px;
 font-size:18px;
 border:none;
 border-radius:10px;
-background:#00ffaa;
-font-weight:bold;
+background:#3b82f6;
+color:white;
 cursor:pointer;
-
 }
 
-#cinema{
+button:disabled{
+opacity:0.5;
+}
 
-width:95%;
-max-width:600px;
-margin-top:25px;
+.videoBox{
+margin-top:30px;
+}
+
+video{
+width:90%;
 border-radius:12px;
-
 }
 
 </style>
@@ -67,86 +67,83 @@ border-radius:12px;
 
 <body>
 
-<header>NOOR AI STUDIO ULTRA</header>
+<header>
+NOOR AI
+</header>
 
 <div class="container">
 
-<textarea id="story" placeholder="Write your movie story..."></textarea>
+<textarea id="prompt" placeholder="Describe your video..."></textarea>
 
 <br>
 
-<button onclick="startMovie()">Generate Movie 🎬</button>
+<button id="createBtn" onclick="createVideo()">
+Create
+</button>
 
-<img id="cinema">
+<div class="videoBox" id="result"></div>
 
 </div>
 
 <script>
 
-let images=[]
+async function createVideo(){
 
-function startMovie(){
+const prompt = document.getElementById("prompt").value;
 
-let text=document.getElementById("story").value
+if(!prompt){
+alert("Write video idea first");
+return;
+}
 
-let scenes=text.split(".")
+const button = document.getElementById("createBtn");
 
-images=[]
+button.innerText="Generating...";
+button.disabled=true;
 
-scenes.forEach(s=>{
+try{
 
-if(s.trim()=="") return
+const response = await fetch("https://ac0e86b5-3bf5-446c-b0bb-a6b892afd4cb-00-m17aokyiv61h.kirk.replit.dev/generate-video",{
 
-let prompt="cinematic movie scene "+s
+method:"POST",
 
-let url="https://image.pollinations.ai/prompt/"+encodeURIComponent(prompt)+"?seed="+Math.random()
+headers:{
+"Content-Type":"application/json"
+},
 
-images.push(url)
-
+body:JSON.stringify({
+prompt:prompt
 })
 
-playCinema()
+});
 
-speakStory(text)
+const data = await response.json();
 
-}
+if(data.video){
 
-function playCinema(){
+document.getElementById("result").innerHTML =
+`<video controls autoplay>
+<source src="${data.video}" type="video/mp4">
+</video>`;
 
-let i=0
+}else{
 
-let screen=document.getElementById("cinema")
-
-function show(){
-
-screen.src=images[i]
-
-i++
-
-if(i<images.length){
-
-setTimeout(show,3000)
+alert("Video generation failed");
 
 }
 
+}catch(err){
+
+alert("Server connection error");
+
 }
 
-show()
-
-}
-
-function speakStory(text){
-
-let speech=new SpeechSynthesisUtterance(text)
-
-speech.rate=0.9
-speech.pitch=0.8
-
-speechSynthesis.speak(speech)
+button.innerText="Create";
+button.disabled=false;
 
 }
 
 </script>
 
 </body>
-  </html>
+</html>
