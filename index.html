@@ -4,7 +4,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Noor AI Studio </title>
+<title>Noor AI Studio ULTRA</title>
 
 <style>
 
@@ -17,11 +17,11 @@ text-align:center;
 }
 
 header{
-background:black;
-padding:20px;
-font-size:26px;
+padding:25px;
+font-size:28px;
 font-weight:bold;
 letter-spacing:3px;
+background:black;
 }
 
 .container{
@@ -30,48 +30,35 @@ padding:20px;
 
 textarea{
 width:90%;
-height:120px;
+height:140px;
 background:#1a1a1a;
 border:none;
 color:white;
 padding:15px;
-border-radius:10px;
+border-radius:12px;
+font-size:16px;
 }
 
 button{
-margin:10px;
-padding:12px 25px;
-font-size:16px;
-border:none;
-border-radius:8px;
-background:#00ffaa;
-cursor:pointer;
-font-weight:bold;
-}
 
-#sceneList{
 margin-top:20px;
-}
-
-.scene{
-margin:10px;
-padding:10px;
-background:#1a1a1a;
+padding:15px 35px;
+font-size:18px;
+border:none;
 border-radius:10px;
-}
+background:#00ffaa;
+font-weight:bold;
+cursor:pointer;
 
-img{
-width:90%;
-max-width:500px;
-border-radius:10px;
-margin-top:10px;
 }
 
 #cinema{
-width:90%;
+
+width:95%;
 max-width:600px;
-margin-top:20px;
-border-radius:10px;
+margin-top:25px;
+border-radius:12px;
+
 }
 
 </style>
@@ -80,23 +67,15 @@ border-radius:10px;
 
 <body>
 
-<header>NOOR AI STUDIO v3 CINEMATIC</header>
+<header>NOOR AI STUDIO ULTRA</header>
 
 <div class="container">
 
-<textarea id="story" placeholder="Write story..."></textarea>
+<textarea id="story" placeholder="Write your movie story..."></textarea>
 
 <br>
 
-<button onclick="generateScenes()">Generate Scenes</button>
-
-<button onclick="generateImages()">AI Images</button>
-
-<button onclick="playVoice()">AI Voice</button>
-
-<button onclick="playCinema()">Play Cinematic</button>
-
-<div id="sceneList"></div>
+<button onclick="startMovie()">Generate Movie 🎬</button>
 
 <img id="cinema">
 
@@ -104,81 +83,38 @@ border-radius:10px;
 
 <script>
 
-let scenes=[]
 let images=[]
 
-function generateScenes(){
+function startMovie(){
 
 let text=document.getElementById("story").value
 
-scenes=text.split(".")
-
-let box=document.getElementById("sceneList")
-box.innerHTML=""
-
-scenes.forEach((s,i)=>{
-
-if(s.trim()=="") return
-
-let div=document.createElement("div")
-div.className="scene"
-div.innerHTML="Scene "+(i+1)+" : "+s
-
-box.appendChild(div)
-
-})
-
-}
-
-function generateImages(){
-
-let box=document.getElementById("sceneList")
-box.innerHTML=""
+let scenes=text.split(".")
 
 images=[]
 
-scenes.forEach((s,i)=>{
+scenes.forEach(s=>{
 
 if(s.trim()=="") return
 
-let prompt=s+" cinematic movie scene"
+let prompt="cinematic movie scene "+s
 
-let url="https://image.pollinations.ai/prompt/"+encodeURIComponent(prompt)
+let url="https://image.pollinations.ai/prompt/"+encodeURIComponent(prompt)+"?seed="+Math.random()
 
 images.push(url)
 
-let div=document.createElement("div")
-div.className="scene"
-
-let img=document.createElement("img")
-img.src=url
-
-div.innerHTML="Scene "+(i+1)+" : "+s
-
-div.appendChild(img)
-
-box.appendChild(div)
-
 })
 
-}
+playCinema()
 
-function playVoice(){
-
-let text=document.getElementById("story").value
-
-let speech=new SpeechSynthesisUtterance(text)
-
-speech.rate=0.9
-speech.pitch=0.8
-
-speechSynthesis.speak(speech)
+speakStory(text)
 
 }
 
 function playCinema(){
 
 let i=0
+
 let screen=document.getElementById("cinema")
 
 function show(){
@@ -199,7 +135,18 @@ show()
 
 }
 
+function speakStory(text){
+
+let speech=new SpeechSynthesisUtterance(text)
+
+speech.rate=0.9
+speech.pitch=0.8
+
+speechSynthesis.speak(speech)
+
+}
+
 </script>
 
 </body>
-</html>
+  </html>
