@@ -1,12 +1,7 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE html><html>
 <head>
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Noor AIStudio</title>
-
-<style>
+<title>NOOR AI Studio</title><style>
 
 body{
 margin:0;
@@ -16,14 +11,12 @@ color:white;
 text-align:center;
 }
 
-header{
-padding:20px;
-font-size:22px;
-font-weight:bold;
+.container{
+padding:30px;
 }
 
-.container{
-padding:20px;
+h1{
+color:#00ffcc;
 }
 
 textarea{
@@ -39,71 +32,33 @@ font-size:16px;
 
 button{
 margin-top:20px;
-padding:14px 30px;
+padding:15px 40px;
 font-size:18px;
+background:#00ffcc;
 border:none;
 border-radius:10px;
-background:#3b82f6;
-color:white;
 cursor:pointer;
 }
 
-button:disabled{
-opacity:0.5;
+button:hover{
+background:#00ddb3;
 }
 
-.videoBox{
+#result{
 margin-top:30px;
 }
 
-video{
-width:90%;
-border-radius:12px;
-}
+</style></head><body><div class="container"><h1>NOOR AI VIDEO GENERATOR</h1><p>Type your idea and generate AI video</p><textarea id="prompt" placeholder="Example: A lion walking in desert sunset"></textarea><br><button onclick="generateVideo()">Generate AI Video</button>
 
-</style>
+<div id="result"></div></div><script>
 
-</head>
-
-<body>
-
-<header>
-NOOR AI
-</header>
-
-<div class="container">
-
-<textarea id="prompt" placeholder="Describe your video..."></textarea>
-
-<br>
-
-<button id="createBtn" onclick="createVideo()">
-Create
-</button>
-
-<div class="videoBox" id="result"></div>
-
-</div>
-
-<script>
-
-async function createVideo(){
+async function generateVideo(){
 
 const prompt = document.getElementById("prompt").value;
 
-if(!prompt){
-alert("Write video idea first");
-return;
-}
+document.getElementById("result").innerHTML = "Generating video...";
 
-const button = document.getElementById("createBtn");
-
-button.innerText="Generating...";
-button.disabled=true;
-
-try{
-
-const response = await fetch("https://ac0e86b5-3bf5-446c-b0bb-a6b892afd4cb-00-m17aokyiv61h.kirk.replit.dev/generate-video",{
+const response = await fetch("https://abby-unabjuratory-karena.ngrok-free.dev/generate",{
 
 method:"POST",
 
@@ -122,28 +77,17 @@ const data = await response.json();
 if(data.video){
 
 document.getElementById("result").innerHTML =
-`<video controls autoplay>
+`<video controls autoplay width="320">
 <source src="${data.video}" type="video/mp4">
 </video>`;
 
 }else{
 
-alert("Video generation failed");
+document.getElementById("result").innerHTML="Video generation failed";
 
 }
 
-}catch(err){
-
-alert("Server connection error");
-
 }
 
-button.innerText="Create";
-button.disabled=false;
-
-}
-
-</script>
-
-</body>
-</html>
+</script></body>
+                                                                                                                         </html>
