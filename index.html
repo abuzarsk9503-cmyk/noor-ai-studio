@@ -1,224 +1,440 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>JARVIS PRO — ABUZAR SK</title>
 <style>
+/* ═══════════════════════════════════════
+   JARVIS PRO — BASE STYLES
+═══════════════════════════════════════ */
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#000;overflow:hidden;font-family:'Courier New',monospace;color:#00d4ff}
-#jarvis{width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;position:relative}
-canvas{position:absolute;top:0;left:0}
-#center{position:absolute;text-align:center;z-index:10}
-#avatar{width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,#00d4ff,#001a2e);border:3px solid #00d4ff;box-shadow:0 0 30px #00d4ff,0 0 60px #00d4ff44;display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 10px;animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{box-shadow:0 0 30px #00d4ff,0 0 60px #00d4ff44}50%{box-shadow:0 0 50px #00d4ff,0 0 100px #00d4ff88}}
-#jarvis-name{font-size:22px;font-weight:bold;color:#00d4ff;text-shadow:0 0 10px #00d4ff;letter-spacing:4px}
-#status{font-size:11px;color:#0099bb;letter-spacing:2px;margin-top:4px}
-#top-left{position:absolute;top:15px;left:15px;font-size:11px;line-height:1.8;color:#00d4ff88}
-#top-right{position:absolute;top:15px;right:15px;text-align:right;font-size:11px;line-height:1.8;color:#00d4ff88}
-#bottom-left{position:absolute;bottom:80px;left:15px;font-size:11px;line-height:1.8;color:#00d4ff88}
-#bottom-right{position:absolute;bottom:80px;right:15px;text-align:right;font-size:11px;line-height:1.8;color:#00d4ff88}
-#chat-area{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,#000a1a);padding:10px 15px}
-#chat-msgs{height:60px;overflow-y:auto;margin-bottom:8px;font-size:12px}
-.umsg{color:#00d4ff;text-align:right}
-.amsg{color:#00ffaa}
-#input-row{display:flex;gap:8px}
-#input-row input{flex:1;background:#001a2e;border:1px solid #00d4ff44;color:#00d4ff;padding:8px 12px;border-radius:20px;font-size:13px;outline:none}
-#input-row button{background:transparent;border:1px solid #00d4ff;color:#00d4ff;padding:8px 14px;border-radius:20px;cursor:pointer;font-size:12px}
-#input-row button:hover{background:#00d4ff22}
-#weather-card{position:absolute;left:50%;transform:translateX(-50%);top:15px;text-align:center;font-size:11px;color:#00d4ff88}
-</style>
+body{background:#000510;overflow:hidden;font-family:'Courier New',monospace;color:#00d4ff;height:100vh;width:100vw}
 
-<div id="jarvis">
-  <canvas id="c"></canvas>
-  <div id="top-left">
-    <div>SYSTEM: <span style="color:#00ff88">ONLINE</span></div>
-    <div>CPU: <span id="cpu">--</span>%</div>
-    <div>MEMORY: <span id="mem">--</span>%</div>
-    <div>NETWORK: <span style="color:#00ff88">CONNECTED</span></div>
-  </div>
-  <div id="top-right">
-    <div id="date-display">--</div>
-    <div id="time-display" style="font-size:18px;color:#00d4ff">--:--</div>
-    <div id="day-display">--</div>
-  </div>
-  <div id="weather-card">
-    <div id="weather-info">🌤️ Loading...</div>
-  </div>
-  <div id="center">
-    <div id="avatar">🤖</div>
-    <div id="jarvis-name">J.A.R.V.I.S</div>
-    <div id="status">TAIYAR HOON</div>
-  </div>
-  <div id="bottom-left">
-    <div>ABUZAR SK</div>
-    <div>AUTHORIZED USER</div>
-    <div>ACCESS: <span style="color:#00ff88">GRANTED</span></div>
-  </div>
-  <div id="bottom-right">
-    <div>GROQ AI: <span style="color:#00ff88">ACTIVE</span></div>
-    <div>MODEL: LLAMA 3.3</div>
-    <div>STATUS: <span style="color:#00ff88">READY</span></div>
-  </div>
-  <div id="chat-area">
-    <div id="chat-msgs"></div>
-    <div id="input-row">
-      <input type="text" id="msg" placeholder="Jarvis se baat karo..." onkeypress="if(event.key==='Enter')send()">
-      <button onclick="startVoice()">🎤</button>
-      <button onclick="send()">➤</button>
-    </div>
-  </div>
+/* CANVAS */
+#canvas-bg{position:fixed;top:0;left:0;z-index:0}
+
+/* LOCK SCREEN */
+#lock-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:#000510;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#lock-title{font-size:24px;letter-spacing:6px;color:#00d4ff;text-shadow:0 0 20px #00d4ff;margin-bottom:8px}
+#lock-sub{font-size:11px;color:#00d4ff66;letter-spacing:3px;margin-bottom:40px}
+#pin-display{display:flex;gap:12px;margin-bottom:30px}
+.pin-dot{width:16px;height:16px;border-radius:50%;border:2px solid #00d4ff;transition:all 0.2s}
+.pin-dot.filled{background:#00d4ff;box-shadow:0 0 10px #00d4ff}
+#pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:220px}
+.pin-btn{background:transparent;border:1px solid #00d4ff44;color:#00d4ff;padding:16px;border-radius:12px;font-size:18px;cursor:pointer;font-family:'Courier New',monospace;transition:all 0.2s}
+.pin-btn:hover,.pin-btn:active{background:#00d4ff22;border-color:#00d4ff;box-shadow:0 0 10px #00d4ff33}
+#lock-status{margin-top:16px;font-size:11px;color:#ff4444;height:20px;letter-spacing:2px}
+#voice-setup-btn{margin-top:20px;background:transparent;border:1px solid #00d4ff44;color:#00d4ff88;padding:10px 20px;border-radius:20px;cursor:pointer;font-size:11px;letter-spacing:2px}
+
+/* VOICE SETUP */
+#voice-setup-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:#000510;z-index:998;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px}
+#vs-title{font-size:18px;color:#00d4ff;letter-spacing:4px;margin-bottom:10px}
+#vs-sub{font-size:11px;color:#00d4ff66;margin-bottom:30px;line-height:1.8}
+#vs-status{font-size:13px;color:#00ff88;margin-bottom:20px;height:24px}
+#vs-wave{width:200px;height:60px;margin:0 auto 20px}
+#vs-btn{background:#00d4ff22;border:2px solid #00d4ff;color:#00d4ff;padding:14px 30px;border-radius:25px;cursor:pointer;font-size:13px;letter-spacing:2px}
+#vs-progress{width:200px;background:#001a2e;border-radius:10px;height:6px;margin-top:16px;overflow:hidden;display:none}
+#vs-bar{height:100%;background:#00d4ff;width:0%;transition:width 0.3s;box-shadow:0 0 10px #00d4ff}
+
+/* MAIN UI */
+#main-ui{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;display:none}
+
+/* TOP BOXES */
+#top-left-box, #top-right-box{position:fixed;top:8px;font-size:10px;line-height:2;background:#000d1a88;backdrop-filter:blur(8px);border:1px solid #00d4ff22;border-radius:10px;padding:8px 10px;cursor:pointer;transition:all 0.3s;min-width:110px}
+#top-left-box{left:8px}
+#top-right-box{right:8px;text-align:right}
+#top-left-box:hover,#top-right-box:hover{border-color:#00d4ff66;background:#001a2eaa}
+.box-label{color:#00d4ff44;font-size:9px;letter-spacing:2px;margin-bottom:2px}
+.box-val{color:#00d4ff;font-size:11px}
+.box-val.green{color:#00ff88}
+.box-val.yellow{color:#ffaa00}
+
+/* TIME CENTER TOP */
+#time-center{position:fixed;top:8px;left:50%;transform:translateX(-50%);text-align:center;background:#000d1a88;backdrop-filter:blur(8px);border:1px solid #00d4ff22;border-radius:10px;padding:6px 16px;cursor:pointer;transition:all 0.3s;z-index:2}
+#time-center:hover{border-color:#00d4ff66}
+#time-big{font-size:26px;font-weight:bold;color:#00d4ff;text-shadow:0 0 15px #00d4ff;letter-spacing:2px}
+#date-small{font-size:10px;color:#00d4ff88;letter-spacing:1px}
+#day-small{font-size:9px;color:#00d4ff55}
+
+/* SIDE BOXES */
+#side-left{position:fixed;left:8px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;z-index:2}
+#side-right{position:fixed;right:8px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;z-index:2;align-items:flex-end}
+.side-box{background:#000d1a88;backdrop-filter:blur(8px);border:1px solid #00d4ff22;border-radius:10px;padding:8px 10px;cursor:pointer;transition:all 0.3s;min-width:100px;font-size:10px}
+.side-box:hover{border-color:#00d4ff88;background:#001a2ecc;box-shadow:0 0 15px #00d4ff22}
+.side-box .sb-icon{font-size:14px;margin-bottom:2px}
+.side-box .sb-title{color:#00d4ff44;font-size:9px;letter-spacing:1px}
+.side-box .sb-val{color:#00d4ff;font-size:11px;line-height:1.6}
+
+/* CENTER HUD */
+#hud-center{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;pointer-events:none;text-align:center}
+#jarvis-label{font-size:14px;letter-spacing:6px;color:#00d4ff88;text-shadow:0 0 8px #00d4ff;margin-top:8px}
+#jarvis-status{font-size:9px;letter-spacing:3px;color:#00d4ff44;margin-top:2px}
+
+/* BOTTOM CHAT */
+#chat-wrap{position:fixed;bottom:0;left:0;right:0;z-index:5;transition:all 0.3s}
+#chat-wrap.expanded #chat-msgs{height:200px}
+#chat-wrap.expanded #expand-hint{display:none}
+#chat-header{background:#000d1acc;backdrop-filter:blur(10px);border-top:1px solid #00d4ff33;padding:6px 12px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+#chat-header-title{font-size:10px;color:#00d4ff88;letter-spacing:2px}
+#expand-hint{font-size:9px;color:#00d4ff44}
+#chat-msgs{height:0;overflow-y:auto;padding:0 12px;transition:height 0.3s;scrollbar-width:none}
+#chat-msgs.open{height:150px;padding:8px 12px}
+#chat-msgs::-webkit-scrollbar{display:none}
+.umsg{color:#00d4ff;text-align:right;font-size:12px;margin:3px 0;cursor:pointer}
+.amsg{color:#00ffaa;font-size:12px;margin:3px 0;line-height:1.5;cursor:pointer}
+.smsg{color:#ffaa00;font-size:11px;margin:2px 0}
+#input-row{display:flex;gap:6px;padding:8px 10px;align-items:center;background:#000d1acc;backdrop-filter:blur(10px)}
+#msg{flex:1;background:#001a2ecc;border:1px solid #00d4ff44;color:#00d4ff;padding:10px 16px;border-radius:25px;font-size:14px;outline:none;font-family:'Courier New',monospace;transition:all 0.3s}
+#msg:focus{border-color:#00d4ff;box-shadow:0 0 12px #00d4ff33}
+#msg::placeholder{color:#00d4ff33}
+.ibtn{background:transparent;border:1px solid #00d4ff44;color:#00d4ff;padding:10px 14px;border-radius:50%;cursor:pointer;font-size:15px;transition:all 0.2s;min-width:44px}
+.ibtn:hover,.ibtn:active{background:#00d4ff22;border-color:#00d4ff;box-shadow:0 0 12px #00d4ff44}
+#mic-btn.listening{background:#ff444422;border-color:#ff4444;color:#ff4444;animation:mic-pulse 1s infinite}
+@keyframes mic-pulse{0%,100%{box-shadow:0 0 5px #ff4444}50%{box-shadow:0 0 20px #ff4444}}
+
+/* VOICE TEXT OVERLAY */
+#voice-overlay{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:10;text-align:center;pointer-events:none;display:none}
+#voice-text{font-size:16px;color:#00d4ff;text-shadow:0 0 20px #00d4ff;background:#000d1acc;padding:16px 24px;border-radius:12px;border:1px solid #00d4ff44;max-width:280px;line-height:1.6}
+
+/* EXPANDED PANEL */
+#exp-panel{position:fixed;top:0;left:0;right:0;bottom:0;background:#000d1aee;backdrop-filter:blur(15px);z-index:8;display:none;flex-direction:column}
+#exp-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #00d4ff22}
+#exp-title{font-size:14px;color:#00d4ff;letter-spacing:3px}
+#exp-close{background:transparent;border:1px solid #ff444466;color:#ff4444;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px}
+#exp-body{flex:1;overflow-y:auto;padding:12px 16px}
+.exp-item{background:#001a2e;border:1px solid #00d4ff22;border-radius:10px;padding:12px;margin-bottom:10px;cursor:pointer;transition:all 0.2s}
+.exp-item:hover{border-color:#00d4ff66;background:#00d4ff11}
+.exp-item .ei-title{color:#00d4ff;font-size:12px;margin-bottom:4px}
+.exp-item .ei-val{color:#00ffaa;font-size:11px}
+/* INPUTS IN PANEL */
+.panel-input{width:100%;background:#001a2e;border:1px solid #00d4ff33;color:#00d4ff;padding:8px 12px;border-radius:8px;font-size:12px;outline:none;margin-bottom:8px;font-family:'Courier New',monospace}
+.panel-btn{background:#00d4ff22;border:1px solid #00d4ff66;color:#00d4ff;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:12px;width:100%;letter-spacing:1px}
+.panel-btn:hover{background:#00d4ff33}
+.todo-item{display:flex;align-items:center;gap:8px;padding:6px;border-bottom:1px solid #00d4ff11;font-size:11px}
+.todo-item input[type=checkbox]{accent-color:#00d4ff;width:14px;height:14px}
+.done-text{text-decoration:line-through;color:#00d4ff44}
+.del-btn{margin-left:auto;color:#ff4444;cursor:pointer;font-size:12px;padding:2px 6px}
+.note-card{background:#001a2e;border:1px solid #00d4ff22;border-radius:8px;padding:8px;margin-bottom:8px}
+.note-time{font-size:9px;color:#00d4ff44;margin-bottom:4px}
+.note-text{font-size:11px;color:#00ffaa}
+/* CHART */
+.chart-bar-wrap{margin-bottom:8px}
+.chart-label{font-size:10px;color:#00d4ff88;margin-bottom:3px}
+.chart-bar-bg{background:#001a2e;border-radius:10px;height:8px;overflow:hidden}
+.chart-bar{height:100%;border-radius:10px;background:linear-gradient(90deg,#00d4ff,#00ff88);box-shadow:0 0 8px #00d4ff;transition:width 1s}
+
+/* NOTIFICATION */
+#notif{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#001a2eee;border:1px solid #00d4ff44;color:#00d4ff;padding:8px 20px;border-radius:20px;font-size:11px;z-index:20;display:none;letter-spacing:1px}
+</style>
+</head>
+<body>
+
+<!-- CANVAS -->
+<canvas id="canvas-bg"></canvas>
+
+<!-- NOTIFICATION -->
+<div id="notif"></div>
+
+<!-- ═══ LOCK SCREEN ═══ -->
+<div id="lock-screen">
+  <div id="lock-title">J.A.R.V.I.S</div>
+  <div id="lock-sub">IDENTITY VERIFICATION REQUIRED</div>
+  <div id="pin-display">
+    <div class="pin-dot" id="pd0"></div>
+    <div class="pin-dot" id="pd1"></div>
+    <div class="pin-dot" id="pd2"></div>
+    <div class="pin-dot" id="pd3"></div>
+  </div>
+  <div id="pin-pad">
+    <button class="pin-btn" onclick="pinPress('1')">1</button>
+    <button class="pin-btn" onclick="pinPress('2')">2</button>
+    <button class="pin-btn" onclick="pinPress('3')">3</button>
+    <button class="pin-btn" onclick="pinPress('4')">4</button>
+    <button class="pin-btn" onclick="pinPress('5')">5</button>
+    <button class="pin-btn" onclick="pinPress('6')">6</button>
+    <button class="pin-btn" onclick="pinPress('7')">7</button>
+    <button class="pin-btn" onclick="pinPress('8')">8</button>
+    <button class="pin-btn" onclick="pinPress('9')">9</button>
+    <button class="pin-btn" onclick="pinPress('clear')" style="color:#ffaa00">CLR</button>
+    <button class="pin-btn" onclick="pinPress('0')">0</button>
+    <button class="pin-btn" onclick="pinPress('ok')" style="color:#00ff88">OK</button>
+  </div>
+  <div id="lock-status"></div>
+  <button id="voice-setup-btn" onclick="showVoiceSetup()">🎤 VOICE SETUP</button>
 </div>
 
+<!-- ═══ VOICE SETUP ═══ -->
+<div id="voice-setup-screen">
+  <div id="vs-title">VOICE REGISTRATION</div>
+  <div id="vs-sub">Abuzar bhai, 3 baar yeh bolo:<br><span style="color:#00d4ff">"Main Abuzar hoon, Jarvis mera hai"</span></div>
+  <div id="vs-status">Button dabao aur bolo</div>
+  <canvas id="vs-wave" width="200" height="60"></canvas>
+  <button id="vs-btn" onclick="recordVoice()">🎤 RECORD</button>
+  <div id="vs-progress"><div id="vs-bar"></div></div>
+  <button style="margin-top:20px;background:transparent;border:1px solid #ff444444;color:#ff4444;padding:8px 20px;border-radius:15px;cursor:pointer;font-size:11px" onclick="skipVoiceSetup()">SKIP →</button>
+</div>
+
+<!-- ═══ MAIN UI ═══ -->
+<div id="main-ui">
+
+  <!-- TOP LEFT BOX -->
+  <div id="top-left-box" onclick="openPanel('system')">
+    <div class="box-label">SYSTEM</div>
+    <div class="box-val green">● ONLINE</div>
+    <div class="box-val">CPU: <span id="cpu">--</span>%</div>
+    <div class="box-val">MEM: <span id="mem">--</span>%</div>
+    <div class="box-val">BAT: <span id="bat">--</span>%</div>
+  </div>
+
+  <!-- TIME CENTER -->
+  <div id="time-center" onclick="openPanel('time')">
+    <div id="time-big">--:--:--</div>
+    <div id="date-small">-- --- ----</div>
+    <div id="day-small">-------</div>
+  </div>
+
+  <!-- TOP RIGHT BOX -->
+  <div id="top-right-box" onclick="openPanel('weather')">
+    <div class="box-label" style="text-align:right">MAUSAM</div>
+    <div class="box-val" id="w-temp" style="font-size:18px">--°C</div>
+    <div class="box-val" id="w-desc">Loading...</div>
+    <div class="box-val" id="w-wind">💨 --</div>
+  </div>
+
+  <!-- SIDE LEFT -->
+  <div id="side-left">
+    <div class="side-box" onclick="openPanel('todo')">
+      <div class="sb-icon">📋</div>
+      <div class="sb-title">KAAM</div>
+      <div class="sb-val" id="todo-count">0 items</div>
+    </div>
+    <div class="side-box" onclick="openPanel('notes')">
+      <div class="sb-icon">📝</div>
+      <div class="sb-title">NOTES</div>
+      <div class="sb-val" id="notes-count">0 saved</div>
+    </div>
+    <div class="side-box" onclick="openPanel('calculator')">
+      <div class="sb-icon">🔢</div>
+      <div class="sb-title">CALC</div>
+      <div class="sb-val">Open</div>
+    </div>
+  </div>
+
+  <!-- SIDE RIGHT -->
+  <div id="side-right">
+    <div class="side-box" onclick="openPanel('stats')" style="text-align:right">
+      <div class="sb-icon">📊</div>
+      <div class="sb-title">STATS</div>
+      <div class="sb-val">Charts</div>
+    </div>
+    <div class="side-box" onclick="openPanel('location')" style="text-align:right">
+      <div class="sb-icon">📍</div>
+      <div class="sb-title">LOCATION</div>
+      <div class="sb-val" id="loc-short">Loading</div>
+    </div>
+    <div class="side-box" onclick="openPanel('security')" style="text-align:right">
+      <div class="sb-icon">🔐</div>
+      <div class="sb-title">SECURITY</div>
+      <div class="sb-val green">ACTIVE</div>
+    </div>
+  </div>
+
+  <!-- HUD CENTER -->
+  <div id="hud-center">
+    <div id="jarvis-label">J.A.R.V.I.S PRO</div>
+    <div id="jarvis-status">TAIYAR HOON</div>
+  </div>
+
+  <!-- VOICE OVERLAY -->
+  <div id="voice-overlay">
+    <div id="voice-text">Bol raha hoon... 🎤</div>
+  </div>
+
+  <!-- EXPANDED PANEL -->
+  <div id="exp-panel">
+    <div id="exp-header">
+      <div id="exp-title">PANEL</div>
+      <button id="exp-close" onclick="closePanel()">✕ BAND KARO</button>
+    </div>
+    <div id="exp-body"></div>
+  </div>
+
+  <!-- CHAT -->
+  <div id="chat-wrap">
+    <div id="chat-header" onclick="toggleChat()">
+      <div id="chat-header-title">🤖 JARVIS — BAAT KARO</div>
+      <div id="expand-hint">▲ KHOLNE KE LIYE TAP KARO</div>
+    </div>
+    <div id="chat-msgs"></div>
+    <div id="input-row">
+      <input type="text" id="msg" placeholder="Jarvis se kuch bhi poochho..." onkeypress="if(event.key==='Enter')send()">
+      <button class="ibtn" id="mic-btn" onclick="toggleMic()" title="Mic">🎤</button>
+      <button class="ibtn" onclick="send()" title="Bhejo">➤</button>
+    </div>
+  </div>
+
+</div><!-- end main-ui -->
+
 <script>
-// API Key
-let key = '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 ';
+// ═══════════════════════════════════════
+// ⬇️ YAHAN APNI API KEY DAALO
+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
+// ⬆️ SIRF YEH LINE CHANGE KARO
+// ═══════════════════════════════════════
 
+// PIN — Default: 1234 (change kar sakte ho)
+const CORRECT_PIN = "1234";
 
-// Canvas Animation
-const canvas = document.getElementById('c');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-const cx = canvas.width/2, cy = canvas.height/2;
-let angle = 0;
-
-function drawRings(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  
-  // Outer rings
-  const rings = [
-    {r:180,speed:0.005,dash:[10,5],color:'#00d4ff44'},
-    {r:160,speed:-0.008,dash:[5,10],color:'#00d4ff66'},
-    {r:140,speed:0.012,dash:[15,3],color:'#00d4ff33'},
-    {r:120,speed:-0.006,dash:[8,8],color:'#00d4ff55'},
-    {r:100,speed:0.015,dash:[3,12],color:'#00d4ff44'},
-  ];
-  
-  rings.forEach((ring,i)=>{
-    ctx.save();
-    ctx.translate(cx,cy);
-    ctx.rotate(angle * ring.speed * 100);
-    ctx.beginPath();
-    ctx.setLineDash(ring.dash);
-    ctx.arc(0,0,ring.r,0,Math.PI*2);
-    ctx.strokeStyle=ring.color;
-    ctx.lineWidth=1.5;
-    ctx.stroke();
-    ctx.restore();
-  });
-
-  // Glowing dots on rings
-  for(let i=0;i<8;i++){
-    const a = angle*0.02 + (i*Math.PI*2/8);
-    const x = cx + Math.cos(a)*170;
-    const y = cy + Math.sin(a)*170;
-    ctx.beginPath();
-    ctx.arc(x,y,3,0,Math.PI*2);
-    ctx.fillStyle='#00d4ff';
-    ctx.shadowBlur=10;
-    ctx.shadowColor='#00d4ff';
-    ctx.fill();
-  }
-
-  // Inner glow
-  const grad = ctx.createRadialGradient(cx,cy,0,cx,cy,90);
-  grad.addColorStop(0,'#00d4ff11');
-  grad.addColorStop(1,'transparent');
-  ctx.beginPath();
-  ctx.arc(cx,cy,90,0,Math.PI*2);
-  ctx.fillStyle=grad;
-  ctx.fill();
-
-  angle++;
-  requestAnimationFrame(drawRings);
-}
-drawRings();
-
-// Fake CPU/Memory
-function updateStats(){
-  document.getElementById('cpu').innerText = Math.floor(Math.random()*30+20);
-  document.getElementById('mem').innerText = Math.floor(Math.random()*20+50);
-}
-setInterval(updateStats,2000);
-
-// Time & Date
-function updateTime(){
-  const now = new Date();
-  const days = ['Itwaar','Somwar','Mangalwar','Budhwar','Guruwar','Shukrawar','Shaneewar'];
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  document.getElementById('time-display').innerText = 
-    String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0')+':'+String(now.getSeconds()).padStart(2,'0');
-  document.getElementById('date-display').innerText = 
-    now.getDate()+' '+months[now.getMonth()]+' '+now.getFullYear();
-  document.getElementById('day-display').innerText = days[now.getDay()];
-}
-setInterval(updateTime,1000);
-updateTime();
-
-// Weather
-async function getWeather(){
-  try{
-    const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=20.5937&longitude=78.9629&current_weather=true');
-    const d = await r.json();
-    const w = d.current_weather;
-    const codes = {0:'☀️ Saaf',1:'🌤️ Thoda Badal',2:'⛅ Badal',3:'☁️ Gehre Badal',61:'🌧️ Baarish',80:'🌦️ Hafif Baarish'};
-    const desc = codes[w.weathercode]||'🌡️ Mausam';
-    document.getElementById('weather-info').innerHTML = 
-      desc+'<br>🌡️ '+w.temperature+'°C | 💨 '+w.windspeed+' km/h';
-  }catch(e){
-    document.getElementById('weather-info').innerText='🌤️ Mausam N/A';
-  }
-}
-getWeather();
-
-// Chat
+// ═══ VARIABLES ═══
+let pinEntered = '';
+let isLocked = true;
 let memory = [];
-function addMsg(w,t){
-  const c = document.getElementById('chat-msgs');
-  const d = document.createElement('div');
-  d.className = w==='user'?'umsg':'amsg';
-  d.innerText = (w==='user'?'👤 ':' J► ')+t;
-  c.appendChild(d);
-  c.scrollTop=c.scrollHeight;
-  document.getElementById('status').innerText = w==='user'?'PROCESSING...':'TAIYAR HOON';
-}
+let todos = JSON.parse(localStorage.getItem('jp_todos') || '[]');
+let notes = JSON.parse(localStorage.getItem('jp_notes') || '[]');
+let voiceProfile = JSON.parse(localStorage.getItem('jp_voice') || 'null');
+let voiceRecordings = 0;
+let micOn = false;
+let recognition = null;
+let chatOpen = false;
+let isTalking = false;
+let canvasAngle = 0;
 
-async function send(){
-  const i = document.getElementById('msg');
-  const t = i.value.trim();
-  if(!t||!key) return;
-  i.value='';
-  memory.push({role:'user',content:t});
-  if(memory.length>10) memory=memory.slice(-10);
-  addMsg('user',t);
-  
-  const now = new Date();
-  const sys = `Tum J.A.R.V.I.S ho — Abuzar ke personal AI assistant. Hamesha Hindi mein jawab do. Aaj ki date: ${now.toLocaleDateString('hi-IN')}. Time: ${now.toLocaleTimeString('hi-IN')}. Confident raho, "nahi kar sakta" mat bolo.`;
-  
-  const r = await fetch('https://api.groq.com/openai/v1/chat/completions',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
-    body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'system',content:sys},...memory]})
-  });
-  const data = await r.json();
-  if(data.choices){
-    const reply = data.choices[0].message.content;
-    memory.push({role:'assistant',content:reply});
-    addMsg('ai',reply);
-    speak(reply);
-  }
-}
+// ═══ CANVAS HUD ═══
+const canvas = document.getElementById('canvas-bg');
+const ctx = canvas.getContext('2d');
+function resizeCanvas(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+resizeCanvas();
+window.addEventListener('resize',resizeCanvas);
 
-function speak(text){
-  if('speechSynthesis' in window){
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text.substring(0,300));
-    u.lang='hi-IN'; u.rate=1.1;
-    window.speechSynthesis.speak(u);
-  }
-}
+function drawHUD(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const cx=canvas.width/2, cy=canvas.height/2;
 
-function startVoice(){
-  if(!('webkitSpeechRecognition' in window)){alert('Voice support nahi hai!');return;}
-  const r = new webkitSpeechRecognition();
-  r.lang='hi-IN';
-  r.onresult=e=>{document.getElementById('msg').value=e.results[0][0].transcript;send();};
-  r.start();
-  document.getElementById('status').innerText='SUN RAHA HOON...🎤';
+  // Stars
+  ctx.fillStyle='#ffffff11';
+  for(let i=0;i<50;i++){
+    const x=(Math.sin(i*137.5)*cx+cx)%canvas.width;
+    const y=(Math.cos(i*97.3)*cy+cy)%canvas.height;
+    ctx.beginPath();
+    ctx.arc(x,y,0.8,0,Math.PI*2);
+    ctx.fill();
+  }
+
+  // Grid lines
+  ctx.strokeStyle='#00d4ff08';
+  ctx.lineWidth=0.5;
+  ctx.setLineDash([]);
+  for(let x=0;x<canvas.width;x+=40){
+    ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke();
+  }
+  for(let y=0;y<canvas.height;y+=40){
+    ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke();
+  }
+
+  // Rotating rings
+  const glow = isTalking ? 1.5 : 1;
+  const rings=[
+    {r:220,spd:0.002,dash:[14,7],col:`rgba(0,212,255,${0.15*glow})`},
+    {r:195,spd:-0.004,dash:[7,14],col:`rgba(0,212,255,${0.25*glow})`},
+    {r:172,spd:0.007,dash:[20,5],col:`rgba(0,212,255,${0.12*glow})`},
+    {r:150,spd:-0.003,dash:[10,10],col:`rgba(0,212,255,${0.2*glow})`},
+    {r:130,spd:0.009,dash:[5,15],col:`rgba(0,212,255,${0.15*glow})`},
+  ];
+  rings.forEach(ring=>{
+    ctx.save();
+    ctx.translate(cx,cy);
+    ctx.rotate(canvasAngle*ring.spd*100);
+    ctx.beginPath();
+    ctx.setLineDash(ring.dash);
+    ctx.arc(0,0,ring.r,0,Math.PI*2);
+    ctx.strokeStyle=ring.col;
+    ctx.lineWidth=isTalking?2.5:1.5;
+    ctx.stroke();
+    ctx.restore();
+  });
+
+  // Crosshair lines
+  ctx.strokeStyle=`rgba(0,212,255,${0.3*glow})`;
+  ctx.lineWidth=1;
+  ctx.setLineDash([5,5]);
+  ctx.beginPath();ctx.moveTo(cx-240,cy);ctx.lineTo(cx-130,cy);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(cx+130,cy);ctx.lineTo(cx+240,cy);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(cx,cy-240);ctx.lineTo(cx,cy-130);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(cx,cy+130);ctx.lineTo(cx,cy+240);ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Corner brackets
+  const bs=25, bd=8;
+  const corners=[
+    {x:cx-225,y:cy-225},{x:cx+225,y:cy-225},
+    {x:cx-225,y:cy+225},{x:cx+225,y:cy+225}
+  ];
+  ctx.strokeStyle=`rgba(0,212,255,${0.4*glow})`;
+  ctx.lineWidth=1.5;
+  corners.forEach((c,i)=>{
+    const sx=i%2===0?1:-1, sy=i<2?1:-1;
+    ctx.beginPath();ctx.moveTo(c.x,c.y);ctx.lineTo(c.x+sx*bs,c.y);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(c.x,c.y);ctx.lineTo(c.x,c.y+sy*bs);ctx.stroke();
+  });
+
+  // Dots on outer ring
+  const dotCount = isTalking?16:10;
+  for(let i=0;i<dotCount;i++){
+    const a=canvasAngle*0.015+(i*Math.PI*2/dotCount);
+    ctx.beginPath();
+    ctx.arc(cx+Math.cos(a)*218,cy+Math.sin(a)*218,isTalking?4:2.5,0,Math.PI*2);
+    ctx.fillStyle=`rgba(0,212,255,${isTalking?0.9:0.7})`;
+    ctx.shadowBlur=isTalking?20:10;
+    ctx.shadowColor='#00d4ff';
+    ctx.fill();
+    ctx.shadowBlur=0;
+  }
+
+  // Center glow
+  const grd=ctx.createRadialGradient(cx,cy,0,cx,cy,isTalking?80:50);
+  grd.addColorStop(0,`rgba(0,212,255,${isTalking?0.5:0.3})`);
+  grd.addColorStop(0.3,`rgba(0,212,255,${isTalking?0.15:0.08})`);
+  grd.addColorStop(1,'transparent');
+  ctx.beginPath();
+  ctx.arc(cx,cy,isTalking?80:50,0,Math.PI*2);
+  ctx.fillStyle=grd;
+  ctx.fill();
+
+  // Center point
+  ctx.beginPath();
+  ctx.arc(cx,cy,isTalking?10:6,0,Math.PI*2);
+  ctx.fillStyle=`rgba(0,212,255,${isTalking?1:0.8})`;
+  ctx.shadowBlur=isTalking?40:20;
+  ctx.shadowColor='#00d4ff';
+  ctx.fill();
+  ctx.shadowBlur=0;
+
+  canvasAngle++;
+  requestAnimationFrame(drawHUD);
 }
-  </script>
+drawHUD();
+
+// ═══ PIN LOCK ═══
+function pinPress(val){
+  if(val==='clear'){
+    pinEntered='';
+    updatePinDisplay();
+    document.getElementById('lock-status').innerText='';
+    return;
+  }
+  if(val==='ok'){
+    if(pinEntered===CORRECT_PIN){
+      unlockJarvis();
+    }else{
+      document.getElementById('lock-status').innerText='❌ GALAT PIN — DOBARA KOSHISH';
+      pinEntered='';
+      updatePinDisplay();
+      setTimeout(()=>document.getElementById('lock-status').innerText='',2000);
+    }
+    return;
+  }
+  if(pinEntered.length<4){
+    pinEntered+=val;
+    updatePinDisplay();
+    if(pinEntered.length===4) setTimeout(()=>pin
