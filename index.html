@@ -1,93 +1,224 @@
-<!DOCTYPE html><html>
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NOOR AI Studio</title><style>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;overflow:hidden;font-family:'Courier New',monospace;color:#00d4ff}
+#jarvis{width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;position:relative}
+canvas{position:absolute;top:0;left:0}
+#center{position:absolute;text-align:center;z-index:10}
+#avatar{width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,#00d4ff,#001a2e);border:3px solid #00d4ff;box-shadow:0 0 30px #00d4ff,0 0 60px #00d4ff44;display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 10px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 30px #00d4ff,0 0 60px #00d4ff44}50%{box-shadow:0 0 50px #00d4ff,0 0 100px #00d4ff88}}
+#jarvis-name{font-size:22px;font-weight:bold;color:#00d4ff;text-shadow:0 0 10px #00d4ff;letter-spacing:4px}
+#status{font-size:11px;color:#0099bb;letter-spacing:2px;margin-top:4px}
+#top-left{position:absolute;top:15px;left:15px;font-size:11px;line-height:1.8;color:#00d4ff88}
+#top-right{position:absolute;top:15px;right:15px;text-align:right;font-size:11px;line-height:1.8;color:#00d4ff88}
+#bottom-left{position:absolute;bottom:80px;left:15px;font-size:11px;line-height:1.8;color:#00d4ff88}
+#bottom-right{position:absolute;bottom:80px;right:15px;text-align:right;font-size:11px;line-height:1.8;color:#00d4ff88}
+#chat-area{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,#000a1a);padding:10px 15px}
+#chat-msgs{height:60px;overflow-y:auto;margin-bottom:8px;font-size:12px}
+.umsg{color:#00d4ff;text-align:right}
+.amsg{color:#00ffaa}
+#input-row{display:flex;gap:8px}
+#input-row input{flex:1;background:#001a2e;border:1px solid #00d4ff44;color:#00d4ff;padding:8px 12px;border-radius:20px;font-size:13px;outline:none}
+#input-row button{background:transparent;border:1px solid #00d4ff;color:#00d4ff;padding:8px 14px;border-radius:20px;cursor:pointer;font-size:12px}
+#input-row button:hover{background:#00d4ff22}
+#weather-card{position:absolute;left:50%;transform:translateX(-50%);top:15px;text-align:center;font-size:11px;color:#00d4ff88}
+</style>
 
-body{
-margin:0;
-font-family:Arial;
-background:#0b0b0b;
-color:white;
-text-align:center;
+<div id="jarvis">
+  <canvas id="c"></canvas>
+  <div id="top-left">
+    <div>SYSTEM: <span style="color:#00ff88">ONLINE</span></div>
+    <div>CPU: <span id="cpu">--</span>%</div>
+    <div>MEMORY: <span id="mem">--</span>%</div>
+    <div>NETWORK: <span style="color:#00ff88">CONNECTED</span></div>
+  </div>
+  <div id="top-right">
+    <div id="date-display">--</div>
+    <div id="time-display" style="font-size:18px;color:#00d4ff">--:--</div>
+    <div id="day-display">--</div>
+  </div>
+  <div id="weather-card">
+    <div id="weather-info">🌤️ Loading...</div>
+  </div>
+  <div id="center">
+    <div id="avatar">🤖</div>
+    <div id="jarvis-name">J.A.R.V.I.S</div>
+    <div id="status">TAIYAR HOON</div>
+  </div>
+  <div id="bottom-left">
+    <div>ABUZAR SK</div>
+    <div>AUTHORIZED USER</div>
+    <div>ACCESS: <span style="color:#00ff88">GRANTED</span></div>
+  </div>
+  <div id="bottom-right">
+    <div>GROQ AI: <span style="color:#00ff88">ACTIVE</span></div>
+    <div>MODEL: LLAMA 3.3</div>
+    <div>STATUS: <span style="color:#00ff88">READY</span></div>
+  </div>
+  <div id="chat-area">
+    <div id="chat-msgs"></div>
+    <div id="input-row">
+      <input type="text" id="msg" placeholder="Jarvis se baat karo..." onkeypress="if(event.key==='Enter')send()">
+      <button onclick="startVoice()">🎤</button>
+      <button onclick="send()">➤</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// API Key
+let key = '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 ';
+
+
+// Canvas Animation
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+const cx = canvas.width/2, cy = canvas.height/2;
+let angle = 0;
+
+function drawRings(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  
+  // Outer rings
+  const rings = [
+    {r:180,speed:0.005,dash:[10,5],color:'#00d4ff44'},
+    {r:160,speed:-0.008,dash:[5,10],color:'#00d4ff66'},
+    {r:140,speed:0.012,dash:[15,3],color:'#00d4ff33'},
+    {r:120,speed:-0.006,dash:[8,8],color:'#00d4ff55'},
+    {r:100,speed:0.015,dash:[3,12],color:'#00d4ff44'},
+  ];
+  
+  rings.forEach((ring,i)=>{
+    ctx.save();
+    ctx.translate(cx,cy);
+    ctx.rotate(angle * ring.speed * 100);
+    ctx.beginPath();
+    ctx.setLineDash(ring.dash);
+    ctx.arc(0,0,ring.r,0,Math.PI*2);
+    ctx.strokeStyle=ring.color;
+    ctx.lineWidth=1.5;
+    ctx.stroke();
+    ctx.restore();
+  });
+
+  // Glowing dots on rings
+  for(let i=0;i<8;i++){
+    const a = angle*0.02 + (i*Math.PI*2/8);
+    const x = cx + Math.cos(a)*170;
+    const y = cy + Math.sin(a)*170;
+    ctx.beginPath();
+    ctx.arc(x,y,3,0,Math.PI*2);
+    ctx.fillStyle='#00d4ff';
+    ctx.shadowBlur=10;
+    ctx.shadowColor='#00d4ff';
+    ctx.fill();
+  }
+
+  // Inner glow
+  const grad = ctx.createRadialGradient(cx,cy,0,cx,cy,90);
+  grad.addColorStop(0,'#00d4ff11');
+  grad.addColorStop(1,'transparent');
+  ctx.beginPath();
+  ctx.arc(cx,cy,90,0,Math.PI*2);
+  ctx.fillStyle=grad;
+  ctx.fill();
+
+  angle++;
+  requestAnimationFrame(drawRings);
+}
+drawRings();
+
+// Fake CPU/Memory
+function updateStats(){
+  document.getElementById('cpu').innerText = Math.floor(Math.random()*30+20);
+  document.getElementById('mem').innerText = Math.floor(Math.random()*20+50);
+}
+setInterval(updateStats,2000);
+
+// Time & Date
+function updateTime(){
+  const now = new Date();
+  const days = ['Itwaar','Somwar','Mangalwar','Budhwar','Guruwar','Shukrawar','Shaneewar'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('time-display').innerText = 
+    String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0')+':'+String(now.getSeconds()).padStart(2,'0');
+  document.getElementById('date-display').innerText = 
+    now.getDate()+' '+months[now.getMonth()]+' '+now.getFullYear();
+  document.getElementById('day-display').innerText = days[now.getDay()];
+}
+setInterval(updateTime,1000);
+updateTime();
+
+// Weather
+async function getWeather(){
+  try{
+    const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=20.5937&longitude=78.9629&current_weather=true');
+    const d = await r.json();
+    const w = d.current_weather;
+    const codes = {0:'☀️ Saaf',1:'🌤️ Thoda Badal',2:'⛅ Badal',3:'☁️ Gehre Badal',61:'🌧️ Baarish',80:'🌦️ Hafif Baarish'};
+    const desc = codes[w.weathercode]||'🌡️ Mausam';
+    document.getElementById('weather-info').innerHTML = 
+      desc+'<br>🌡️ '+w.temperature+'°C | 💨 '+w.windspeed+' km/h';
+  }catch(e){
+    document.getElementById('weather-info').innerText='🌤️ Mausam N/A';
+  }
+}
+getWeather();
+
+// Chat
+let memory = [];
+function addMsg(w,t){
+  const c = document.getElementById('chat-msgs');
+  const d = document.createElement('div');
+  d.className = w==='user'?'umsg':'amsg';
+  d.innerText = (w==='user'?'👤 ':' J► ')+t;
+  c.appendChild(d);
+  c.scrollTop=c.scrollHeight;
+  document.getElementById('status').innerText = w==='user'?'PROCESSING...':'TAIYAR HOON';
 }
 
-.container{
-padding:30px;
+async function send(){
+  const i = document.getElementById('msg');
+  const t = i.value.trim();
+  if(!t||!key) return;
+  i.value='';
+  memory.push({role:'user',content:t});
+  if(memory.length>10) memory=memory.slice(-10);
+  addMsg('user',t);
+  
+  const now = new Date();
+  const sys = `Tum J.A.R.V.I.S ho — Abuzar ke personal AI assistant. Hamesha Hindi mein jawab do. Aaj ki date: ${now.toLocaleDateString('hi-IN')}. Time: ${now.toLocaleTimeString('hi-IN')}. Confident raho, "nahi kar sakta" mat bolo.`;
+  
+  const r = await fetch('https://api.groq.com/openai/v1/chat/completions',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+    body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'system',content:sys},...memory]})
+  });
+  const data = await r.json();
+  if(data.choices){
+    const reply = data.choices[0].message.content;
+    memory.push({role:'assistant',content:reply});
+    addMsg('ai',reply);
+    speak(reply);
+  }
 }
 
-h1{
-color:#00ffcc;
+function speak(text){
+  if('speechSynthesis' in window){
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text.substring(0,300));
+    u.lang='hi-IN'; u.rate=1.1;
+    window.speechSynthesis.speak(u);
+  }
 }
 
-textarea{
-width:90%;
-height:120px;
-background:#1a1a1a;
-border:none;
-border-radius:10px;
-padding:15px;
-color:white;
-font-size:16px;
+function startVoice(){
+  if(!('webkitSpeechRecognition' in window)){alert('Voice support nahi hai!');return;}
+  const r = new webkitSpeechRecognition();
+  r.lang='hi-IN';
+  r.onresult=e=>{document.getElementById('msg').value=e.results[0][0].transcript;send();};
+  r.start();
+  document.getElementById('status').innerText='SUN RAHA HOON...🎤';
 }
-
-button{
-margin-top:20px;
-padding:15px 40px;
-font-size:18px;
-background:#00ffcc;
-border:none;
-border-radius:10px;
-cursor:pointer;
-}
-
-button:hover{
-background:#00ddb3;
-}
-
-#result{
-margin-top:30px;
-}
-
-</style></head><body><div class="container"><h1>NOOR AI VIDEO GENERATOR</h1><p>Type your idea and generate AI video</p><textarea id="prompt" placeholder="Example: A lion walking in desert sunset"></textarea><br><button onclick="generateVideo()">Generate AI Video</button>
-
-<div id="result"></div></div><script>
-
-async function generateVideo(){
-
-const prompt = document.getElementById("prompt").value;
-
-document.getElementById("result").innerHTML = "Generating video...";
-
-const response = await fetch("https://abby-unabjuratory-karena.ngrok-free.dev//generate",{
-
-method:"POST",
-
-headers:{
-"Content-Type":"application/json"
-},
-
-body:JSON.stringify({
-prompt:prompt
-})
-
-});
-
-const data = await response.json();
-
-if(data.video){
-
-document.getElementById("result").innerHTML =
-`<video controls autoplay width="320">
-<source src="${data.video}" type="video/mp4">
-</video>`;
-
-}else{
-
-document.getElementById("result").innerHTML="Video generation failed";
-
-}
-
-}
-
-</script></body>
-                                                                                                                         </html>
+  </script>
