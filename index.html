@@ -282,22 +282,7 @@ const GROQ_API_KEY = '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';
 // ⬆️ SIRF YEH LINE CHANGE KARO
 // ═══════════════════════════════════════
 
-// PIN — Default: 1234 (change kar sakte ho)
-const CORRECT_PIN = "1234";
 
-// ═══ VARIABLES ═══
-let pinEntered = '';
-let isLocked = true;
-let memory = [];
-let todos = JSON.parse(localStorage.getItem('jp_todos') || '[]');
-let notes = JSON.parse(localStorage.getItem('jp_notes') || '[]');
-let voiceProfile = JSON.parse(localStorage.getItem('jp_voice') || 'null');
-let voiceRecordings = 0;
-let micOn = false;
-let recognition = null;
-let chatOpen = false;
-let isTalking = false;
-let canvasAngle = 0;
 
 // ═══ CANVAS HUD ═══
 const canvas = document.getElementById('canvas-bg');
