@@ -26,7 +26,7 @@ curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_POST, true);
 curl_setopt($ch, CURLOPT_HTTPHEADER, [
   "Content-Type: application/json",
-  "Authorization: Bearer APNI_GROQ_API_KEY_YAHAN_DALO"
+  "Authorization: Bearer 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"
 ]);
 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
 
