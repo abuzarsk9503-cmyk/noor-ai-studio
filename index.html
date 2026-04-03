@@ -1,309 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Jarvis AI</title>
-
-<style>
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:Arial,sans-serif;
-}
-
-body{
-  background:#020b1f;
-  color:#00d9ff;
-  overflow:hidden;
-}
-
-.stars{
-  position:fixed;
-  inset:0;
-  background:
-    radial-gradient(2px 2px at 20% 30%,#fff,transparent),
-    radial-gradient(2px 2px at 80% 40%,#00d9ff,transparent),
-    radial-gradient(1px 1px at 60% 70%,#fff,transparent),
-    radial-gradient(2px 2px at 30% 80%,#00d9ff,transparent),
-    #020b1f;
-}
-
-.container{
-  display:flex;
-  justify-content:space-between;
-  height:100vh;
-  padding:20px;
-  position:relative;
-  z-index:2;
-}
-
-.left-panel,.right-panel{
-  width:220px;
-  display:flex;
-  flex-direction:column;
-  gap:15px;
-}
-
-.card{
-  border:1px solid #00d9ff;
-  border-radius:18px;
-  padding:15px;
-  background:rgba(0,0,0,.35);
-  box-shadow:0 0 20px #00d9ff55;
-}
-
-.card h3{
-  margin-bottom:10px;
-}
-
-.big{
-  font-size:38px;
-  font-weight:bold;
-}
-
-.center-panel{
-  flex:1;
-  text-align:center;
-  padding:0 25px;
-}
-
-.title{
-  font-size:56px;
-  text-shadow:0 0 20px #00d9ff;
-}
-
-.online{
-  margin-bottom:20px;
-}
-
-.circle{
-  width:280px;
-  height:280px;
-  border:4px solid #00d9ff;
-  border-radius:50%;
-  margin:20px auto;
-  position:relative;
-  box-shadow:0 0 30px #00d9ff;
-  animation:spin 8s linear infinite;
-}
-
-.circle::before,
-.circle::after{
-  content:"";
-  position:absolute;
-  border:3px solid #00d9ff;
-  border-radius:50%;
-}
-
-.circle::before{ inset:25px; }
-.circle::after{ inset:60px; }
-
-@keyframes spin{
-  from{transform:rotate(0deg);}
-  to{transform:rotate(360deg);}
-}
-
-.chat{
-  max-width:750px;
-  min-height:180px;
-  margin:25px auto;
-  padding:20px;
-  border-radius:20px;
-  border:1px solid #00d9ff;
-  background:rgba(0,0,0,.4);
-  text-align:left;
-  box-shadow:0 0 20px #00d9ff55;
-  overflow:auto;
-}
-
-.bottom-bar{
-  max-width:750px;
-  margin:0 auto;
-  display:flex;
-  gap:10px;
-}
-
-#input{
-  flex:1;
-  padding:18px;
-  border-radius:40px;
-  border:1px solid #00d9ff;
-  background:transparent;
-  color:white;
-  outline:none;
-}
-
-#mic,#send{
-  width:60px;
-  height:60px;
-  border-radius:50%;
-  border:1px solid #00d9ff;
-  background:#041b35;
-  color:#00d9ff;
-  font-size:24px;
-  box-shadow:0 0 20px #00d9ff;
-  cursor:pointer;
-}
-
-.code-box{
-  margin-top:15px;
-  padding:15px;
-  border-radius:12px;
-  border:1px solid #00d9ff;
-  background:#061321;
-  white-space:pre-wrap;
-  color:#7df9ff;
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jarvis AI</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="stars"></div>
 
-<div class="stars"></div>
+  <div class="container">
 
-<div class="container">
+    <div class="left-panel">
+      <div class="card time-card">
+        <h3>TIME</h3>
+        <div id="time" class="big"></div>
+        <p id="date"></p>
+      </div>
 
-  <div class="left-panel">
-    <div class="card">
-      <h3>TIME</h3>
-      <div class="big" id="time"></div>
-      <p id="date"></p>
+      <div class="card">
+        <h3>SYSTEM</h3>
+        <p>Battery: 11%</p>
+        <p>CPU: 23%</p>
+        <p>RAM: 54%</p>
+        <p>Mode: JARVIS READY</p>
+      </div>
+
+      <div class="card tools">
+        <h3>TOOLS</h3>
+        <button>📁 Todo</button>
+        <button>📝 Notes</button>
+        <button>💰 Expense</button>
+        <button>🧮 Calculator</button>
+        <button>🔔 Reminder</button>
+        <button>📔 Diary</button>
+      </div>
     </div>
 
-    <div class="card">
-      <h3>SYSTEM</h3>
-      <p>Battery: 11%</p>
-      <p>CPU: 23%</p>
-      <p>RAM: 54%</p>
-      <p>Mode: JARVIS READY</p>
+    <div class="center-panel">
+      <h1>JARVIS</h1>
+      <p class="online">ONLINE</p>
+
+      <div class="hud"></div>
+
+      <div id="chatArea" class="chat-area">
+        <div class="jarvis-card">
+          Ji Abuzar, kuch bolo...
+        </div>
+      </div>
+
+      <div class="bottom-tools">
+        <button>Todo</button>
+        <button>Notes</button>
+        <button>Expense</button>
+        <button>Calculator</button>
+        <button>Reminder</button>
+        <button>Diary</button>
+        <button>Timer</button>
+      </div>
+
+      <div class="input-bar">
+        <input id="input" type="text" placeholder="Jarvis se bolo...">
+        <button id="mic">🎤</button>
+        <button id="send">➤</button>
+      </div>
     </div>
+
+    <div class="right-panel">
+      <div class="card">
+        <h3>MAUSAM</h3>
+        <div class="big">27°C</div>
+        <p>Cloudy</p>
+        <p>Humidity: 62%</p>
+      </div>
+
+      <div class="card">
+        <h3>LOCATION</h3>
+        <p>Lat: 26.9124° N</p>
+        <p>Long: 75.7873° E</p>
+      </div>
+
+      <div class="card">
+        <h3>STATS</h3>
+        <p>CPU: 23%</p>
+        <p>RAM: 54%</p>
+      </div>
+    </div>
+
   </div>
 
-  <div class="center-panel">
-    <div class="title">JARVIS</div>
-    <div class="online">ONLINE</div>
-
-    <div class="circle"></div>
-
-    <div class="chat" id="reply">
-      Ji Abuzar, kuch bolo...
-    </div>
-
-    <div class="bottom-bar">
-      <input id="input" type="text" placeholder="Jarvis se bolo...">
-      <button id="mic">🎤</button>
-      <button id="send">➤</button>
-    </div>
-  </div>
-
-  <div class="right-panel">
-    <div class="card">
-      <h3>MAUSAM</h3>
-      <div class="big">27°C</div>
-      <p>Cloudy</p>
-      <p>Humidity: 62%</p>
-    </div>
-
-    <div class="card">
-      <h3>LOCATION</h3>
-      <p>Lat: 26.9124° N</p>
-      <p>Long: 75.7873° E</p>
-    </div>
-  </div>
-
-</div>
-
-<script>
-const input = document.getElementById("input");
-const reply = document.getElementById("reply");
-const send = document.getElementById("send");
-const mic = document.getElementById("mic");
-
-function updateClock(){
-  const now = new Date();
-  document.getElementById("time").innerText = now.toLocaleTimeString();
-  document.getElementById("date").innerText = now.toDateString();
-}
-setInterval(updateClock,1000);
-updateClock();
-
-async function askJarvis(message){
-  reply.innerHTML = "Jarvis soch raha hai...";
-
-  try{
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer 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"
-      },
-      body: JSON.stringify({
-        model: "llama3-70b-8192",
-        messages: [
-          {
-            role: "system",
-            content: "Tum Jarvis ho. Hamesha short jawab do. Agar user code maange to code bhi do."
-          },
-          {
-            role: "user",
-            content: message
-          }
-        ]
-      })
-    });
-
-    const data = await response.json();
-
-    const answer = data.choices[0].message.content;
-
-    if(answer.includes("```")){
-      reply.innerHTML = answer
-        .replace(/```/g,"")
-        .replace(/\n/g,"<br>");
-    } else {
-      reply.innerHTML = answer;
-    }
-
-  }catch(error){
-    reply.innerHTML = "API error aaya. API key ya internet check karo.";
-  }
-}
-
-send.onclick = () => {
-  if(input.value.trim() !== ""){
-    askJarvis(input.value);
-  }
-};
-
-input.addEventListener("keypress",(e)=>{
-  if(e.key === "Enter"){
-    askJarvis(input.value);
-  }
-});
-
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-if(SpeechRecognition){
-  const recognition = new SpeechRecognition();
-  recognition.lang = "en-IN";
-
-  mic.onclick = () => {
-    mic.innerHTML = "🔴";
-    recognition.start();
-  };
-
-  recognition.onresult = (e) => {
-    const text = e.results[0][0].transcript;
-    input.value = text;
-    askJarvis(text);
-  };
-
-  recognition.onend = () => {
-    mic.innerHTML = "🎤";
-  };
-}
-</script>
-
+  <script src="script.js"></script>
 </body>
-   </html>
+          </html>
