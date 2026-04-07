@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>JARVIS PRO — ABUZAR</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000814;font-family:'Courier New',monospace;color:#00d4ff;height:100vh;width:100vw;overflow:hidden}
+canvas{position:fixed;top:0;left:0;z-index:0;pointer-events:none}
+#app{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;display:grid;grid-template-columns:160px 1fr 160px;grid-template-rows:auto 1fr auto auto;gap:6px;padding:6px}
+.box{background:rgba(0,20,40,0.85);border:1px solid #00d4ff44;border-radius:8px;padding:8px;backdrop-filter:blur(5px);position:relative;overflow:hidden}
+.box::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#00d4ff,transparent)}
+.box-title{font-size:9px;letter-spacing:3px;color:#00d4ff88;margin-bottom:6px;text-align:center;border-bottom:1px solid #00d4ff22;padding-bottom:4px}
+.box-val{font-size:11px;color:#00d4ff;line-height:1.8}
+.green{color:#00ff88}.yellow{color:#ffaa00}.red{color:#ff4444}
+#top-left{grid-column:1;grid-row:1;display:flex;flex-direction:column;gap:6px}
+#time-box .time-big{font-size:20px;font-weight:bold;color:#00d4ff;text-shadow:0 0 15px #00d4ff;text-align:center}
+#time-box .time-date{font-size:10px;color:#00d4ff88;text-align:center}
+#top-center{grid-column:2;grid-row:1;text-align:center;padding:4px}
+#jarvis-title{font-size:26px;font-weight:bold;color:#00d4ff;letter-spacing:8px;text-shadow:0 0 20px #00d4ff}
+#jarvis-online{font-size:9px;letter-spacing:4px;color:#00ff88;margin-top:2px}
+#top-right{grid-column:3;grid-row:1;display:flex;flex-direction:column;gap:6px}
+#mid-left{grid-column:1;grid-row:2;display:flex;flex-direction:column;gap:6px;overflow-y:auto}
+#mid-left::-webkit-scrollbar{display:none}
+#mid-center{grid-column:2;grid-row:2;position:relative;display:flex;flex-direction:column;gap:6px}
+#mid-right{grid-column:3;grid-row:2;display:flex;flex-direction:column;gap:6px;overflow-y:auto}
+#mid-right::-webkit-scrollbar{display:none}
+.tool-item{display:flex;align-items:center;gap:6px;padding:5px;border-radius:6px;cursor:pointer;transition:all 0.2s;touch-action:manipulation;font-size:11px}
+.tool-item:active{background:#00d4ff22}
+.tool-icon{font-size:13px}
+#hud-wrap{position:relative;flex:1;min-height:180px;display:flex;align-items:center;justify-content:center}
+#hud-canvas{position:absolute;top:0;left:0;width:100%;height:100%}
+#chat-area{background:rgba(0,15,30,0.9);border:1px solid #00d4ff33;border-radius:10px;padding:8px;overflow-y:auto;max-height:160px;min-height:80px}
+#chat-area::-webkit-scrollbar{width:2px}
+#chat-area::-webkit-scrollbar-thumb{background:#00d4ff44}
+.msg-user{text-align:right;margin-bottom:6px}
+.msg-user .bubble{display:inline-block;background:#00d4ff22;border:1px solid #00d4ff44;border-radius:12px 12px 2px 12px;padding:6px 10px;font-size:11px;max-width:85%}
+.msg-ai{text-align:left;margin-bottom:6px}
+.msg-ai .bubble{display:inline-block;background:rgba(0,20,50,0.9);border:1px solid #00d4ff33;border-radius:2px 12px 12px 12px;padding:8px 10px;font-size:11px;max-width:90%}
+.ai-header{font-size:9px;color:#00d4ff88;letter-spacing:2px;margin-bottom:4px}
+.msg-time{font-size:9px;color:#00d4ff44;margin-top:2px}
+#bottom-tabs{grid-column:1/-1;grid-row:3;display:flex;gap:4px;overflow-x:auto;padding:2px 0}
+#bottom-tabs::-webkit-scrollbar{display:none}
+.tab-btn{background:rgba(0,20,40,0.9);border:1px solid #00d4ff33;color:#00d4ff88;padding:7px 10px;border-radius:8px;font-size:9px;cursor:pointer;white-space:nowrap;touch-action:manipulation;transition:all 0.2s;letter-spacing:1px}
+.tab-btn:active{background:#00d4ff22;border-color:#00d4ff;color:#00d4ff}
+#bottom-bar{grid-column:1/-1;grid-row:4;display:flex;align-items:center;gap:5px;padding:2px 0}
+#mic-btn-main{background:rgba(255,68,68,0.2);border:1px solid #ff4444;color:#ff4444;padding:7px 10px;border-radius:8px;cursor:pointer;font-size:9px;touch-action:manipulation;white-space:nowrap}
+#mic-btn-main.on{background:rgba(0,255,136,0.2);border-color:#00ff88;color:#00ff88}
+#msg-input{flex:1;background:rgba(0,20,40,0.9);border:1px solid #00d4ff44;color:#00d4ff;padding:9px 14px;border-radius:25px;font-size:12px;outline:none;font-family:'Courier New',monospace}
+#msg-input::placeholder{color:#00d4ff33}
+#send-btn{background:#00d4ff22;border:1px solid #00d4ff66;color:#00d4ff;padding:9px 14px;border-radius:50%;cursor:pointer;touch-action:manipulation;font-size:14px}
+.action-btn{background:rgba(0,20,40,0.9);border:1px solid #00d4ff33;color:#00d4ff88;padding:7px 8px;border-radius:8px;cursor:pointer;font-size:10px;touch-action:manipulation;text-align:center;line-height:1.2}
+.stat-row{margin-bottom:5px}
+.stat-label{display:flex;justify-content:space-between;font-size:9px;margin-bottom:2px}
+.stat-bar{height:4px;background:#001a2e;border-radius:4px;overflow:hidden}
+.stat-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#00d4ff,#00ff88);box-shadow:0 0 6px #00d4ff}
+.song-ctrl{display:flex;justify-content:center;gap:10px;margin-top:6px}
+.song-btn{background:transparent;border:1px solid #00d4ff44;color:#00d4ff;padding:5px 9px;border-radius:6px;cursor:pointer;font-size:13px;touch-action:manipulation}
+.song-btn.play{background:#00d4ff22;border-color:#00d4ff}
+.yt-btn{width:100%;background:rgba(255,0,0,0.2);border:1px solid #ff0000;color:#ff4444;padding:4px;border-radius:6px;cursor:pointer;font-size:9px;margin-top:5px;letter-spacing:1px;touch-action:manipulation}
+#panel{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,8,20,0.97);z-index:10;display:none;flex-direction:column}
+#panel-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #00d4ff22}
+#panel-title{font-size:13px;letter-spacing:3px;color:#00d4ff}
+#panel-close{background:transparent;border:1px solid #ff444466;color:#ff4444;padding:5px 12px;border-radius:8px;cursor:pointer;touch-action:manipulation}
+#panel-body{flex:1;overflow-y:auto;padding:12px 14px}
+.p-input{width:100%;background:#001a2e;border:1px solid #00d4ff33;color:#00d4ff;padding:9px;border-radius:8px;font-size:12px;outline:none;margin-bottom:8px;font-family:'Courier New',monospace}
+.p-btn{background:#00d4ff22;border:1px solid #00d4ff66;color:#00d4ff;padding:9px;border-radius:8px;cursor:pointer;font-size:11px;width:100%;letter-spacing:1px;touch-action:manipulation;margin-bottom:6px}
+.p-btn:active{background:#00d4ff33}
+.p-item{background:#001a2e;border:1px solid #00d4ff22;border-radius:8px;padding:9px;margin-bottom:7px}
+.p-item-title{color:#00d4ff;font-size:11px;margin-bottom:3px}
+.p-item-val{color:#00ff88;font-size:11px}
+.todo-row{display:flex;align-items:center;gap:7px;padding:7px;border-bottom:1px solid #00d4ff11;font-size:11px}
+.todo-row input[type=checkbox]{accent-color:#00d4ff;width:14px;height:14px}
+.done{text-decoration:line-through;color:#00d4ff44}
+.del{margin-left:auto;color:#ff4444;cursor:pointer;font-size:12px;padding:2px 7px;touch-action:manipulation}
+#notif{position:fixed;top:55px;left:50%;transform:translateX(-50%);background:#001a2eee;border:1px solid #00d4ff44;color:#00d4ff;padding:7px 18px;border-radius:20px;font-size:11px;z-index:20;display:none;letter-spacing:1px;white-space:nowrap}
+#sleep-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:#000000ee;z-index:15;display:none;align-items:center;justify-content:center;cursor:pointer}
+#sleep-screen .sleep-text{font-size:16px;letter-spacing:6px;color:#00d4ff22}
+#voice-overlay{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,20,40,0.95);border:1px solid #00d4ff44;border-radius:12px;padding:14px 22px;z-index:8;display:none;text-align:center;font-size:12px;color:#00d4ff;max-width:280px}
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div id="notif"></div>
+<div id="voice-overlay">🎤 <span id="voice-text">Sun raha hoon...</span></div>
+<div id="sleep-screen" onclick="wakeUp()"><div class="sleep-text">TAP TO WAKE</div></div>
+
+<div id="panel">
+  <div id="panel-header">
+    <div id="panel-title">PANEL</div>
+    <button id="panel-close" onclick="closePanel()">✕ BAND</button>
+  </div>
+  <div id="panel-body"></div>
+</div>
+
+<div id="app">
+  <div id="top-left">
+    <div class="box" id="time-box">
+      <div class="box-title">TIME</div>
+      <div class="time-big" id="t-time">--:--:--</div>
+      <div class="time-date" id="t-date">--</div>
+      <div class="time-date" id="t-day">--</div>
+    </div>
+    <div class="box">
+      <div class="box-title">SYSTEM</div>
+      <div class="box-val">🔋 <span id="s-bat">--%</span></div>
+      <div class="box-val">🖥️ CPU: <span id="s-cpu" class="yellow">--%</span></div>
+      <div class="box-val">💾 RAM: <span id="s-ram" class="green">--%</span></div>
+      <div class="box-val">⚡ <span class="green">JARVIS READY</span></div>
+    </div>
+  </div>
+
+  <div id="top-center">
+    <div id="jarvis-title">JARVIS</div>
+    <div id="jarvis-online">— ONLINE —</div>
+  </div>
+
+  <div id="top-right">
+    <div class="box">
+      <div class="box-title">MAUSAM</div>
+      <div style="text-align:center;font-size:18px" id="w-icon">🌤️</div>
+      <div style="text-align:center;font-size:16px;color:#00d4ff;font-weight:bold" id="w-temp">--°C</div>
+      <div class="box-val" id="w-desc">Loading...</div>
+      <div class="box-val" id="w-wind">💨 --</div>
+      <div class="box-val" id="w-hum">💧 --%</div>
+    </div>
+    <div class="box">
+      <div class="box-title">LOCATION</div>
+      <div class="box-val" id="loc-lat">Lat: --</div>
+      <div class="box-val" id="loc-lng">Long: --</div>
+    </div>
+  </div>
+
+  <div id="mid-left">
+    <div class="box">
+      <div class="box-title">TOOLS</div>
+      <div class="tool-item" onclick="openPanel('todo')"><span class="tool-icon">📋</span>Todo List</div>
+      <div class="tool-item" onclick="openPanel('notes')"><span class="tool-icon">📝</span>Notes</div>
+      <div class="tool-item" onclick="openPanel('expense')"><span class="tool-icon">💰</span>Expense</div>
+      <div class="tool-item" onclick="openPanel('timer')"><span class="tool-icon">⏱️</span>Timer</div>
+      <div class="tool-item" onclick="openPanel('calc')"><span class="tool-icon">🔢</span>Calculator</div>
+      <div class="tool-item" onclick="openPanel('reminder')"><span class="tool-icon">🔔</span>Reminder</div>
+      <div class="tool-item" onclick="openPanel('diary')"><span class="tool-icon">📖</span>Diary</div>
+      <div class="tool-item" onclick="openPanel('habit')"><span class="tool-icon">✅</span>Habit</div>
+      <div class="tool-item" onclick="openPanel('currency')"><span class="tool-icon">💱</span>Currency</div>
+      <div class="tool-item" onclick="openPanel('cricket')"><span class="tool-icon">🏏</span>Cricket</div>
+      <div class="tool-item" onclick="openPanel('story')"><span class="tool-icon">🎬</span>Story/Script</div>
+      <div class="tool-item" onclick="openPanel('business')"><span class="tool-icon">💼</span>Business</div>
+      <div class="tool-item" onclick="openPanel('selfupdate')" style="color:#00ff88"><span class="tool-icon">⚡</span>Self Update</div>
+      <div class="tool-item" onclick="openPanel('setup')" style="color:#ffaa00"><span class="tool-icon">⚙️</span>Settings</div>
+    </div>
+  </div>
+
+  <div id="mid-center">
+    <div id="hud-wrap">
+      <canvas id="hud-canvas"></canvas>
+    </div>
+    <div id="chat-area"></div>
+  </div>
+
+  <div id="mid-right">
+    <div class="box">
+      <div class="box-title">STATS</div>
+      <div class="stat-row">
+        <div class="stat-label"><span>CPU</span><span id="stat-cpu">--%</span></div>
+        <div class="stat-bar"><div class="stat-fill" id="stat-cpu-bar" style="width:0%"></div></div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-label"><span>RAM</span><span id="stat-ram">--%</span></div>
+        <div class="stat-bar"><div class="stat-fill" id="stat-ram-bar" style="width:0%;background:linear-gradient(90deg,#aa00ff,#00d4ff)"></div></div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-label"><span>NET</span><span class="green">OK</span></div>
+        <div class="stat-bar"><div class="stat-fill" style="width:85%"></div></div>
+      </div>
+    </div>
+    <div class="box">
+      <div class="box-title">SONG CONTROLS</div>
+      <div id="song-title" style="font-size:9px;text-align:center;color:#00d4ff88;margin-bottom:4px">Jarvis se gaana maango</div>
+      <div class="song-ctrl">
+        <button class="song-btn">⏮</button>
+        <button class="song-btn play">▶</button>
+        <button class="song-btn">⏭</button>
+      </div>
+      <button class="yt-btn" onclick="openYT()">▶ OPEN IN YOUTUBE</button>
+    </div>
+    <div class="box">
+      <div class="box-title">MEMORY</div>
+      <div class="box-val" id="mem-count">0 messages</div>
+      <div class="box-val green" id="mem-status">AI READY</div>
+      <div class="tool-item" onclick="clearMem()" style="color:#ff4444;font-size:10px;margin-top:4px">🗑️ Clear Memory</div>
+    </div>
+    <div class="box">
+      <div class="box-title">AUTO UPDATE</div>
+      <div class="box-val green" id="update-status">READY</div>
+      <div class="tool-item" onclick="openPanel('selfupdate')" style="color:#00ff88;font-size:10px">⚡ Update Karo</div>
+    </div>
+  </div>
+
+  <div id="bottom-tabs">
+    <button class="tab-btn" onclick="openPanel('todo')">📋 Todo</button>
+    <button class="tab-btn" onclick="openPanel('notes')">📝 Notes</button>
+    <button class="tab-btn" onclick="openPanel('expense')">💰 Expense</button>
+    <button class="tab-btn" onclick="openPanel('calc')">🔢 Calculator</button>
+    <button class="tab-btn" onclick="openPanel('reminder')">🔔 Reminder</button>
+    <button class="tab-btn" onclick="openPanel('diary')">📖 Diary</button>
+    <button class="tab-btn" onclick="openPanel('timer')">⏱️ Timer</button>
+    <button class="tab-btn" onclick="openPanel('habit')">✅ Habit</button>
+    <button class="tab-btn" onclick="openPanel('news')">📰 News</button>
+    <button class="tab-btn" onclick="openPanel('cricket')">🏏 Cricket</button>
+    <button class="tab-btn" onclick="openPanel('currency')">💱 Currency</button>
+    <button class="tab-btn" onclick="openPanel('story')">🎬 Story</button>
+    <button class="tab-btn" onclick="openPanel('business')">💼 Business</button>
+    <button class="tab-btn" onclick="openPanel('selfupdate')" style="color:#00ff88;border-color:#00ff8844">⚡ Update</button>
+    <button class="tab-btn" onclick="openPanel('setup')" style="color:#ffaa00">⚙️ Setup</button>
+  </div>
+
+  <div id="bottom-bar">
+    <button id="mic-btn-main" onclick="toggleMic()">🎤 Mic OFF</button>
+    <input type="text" id="msg-input" placeholder="Jarvis se bolo..." onkeypress="if(event.key==='Enter')sendMsg()">
+    <button id="send-btn" onclick="sendMsg()">➤</button>
+    <button class="action-btn" onclick="changeMood()">😊<br>Mood</button>
+    <button class="action-btn" onclick="sleepMode()">🌙<br>Sleep</button>
+    <button class="action-btn" onclick="openPanel('selfupdate')">⚡<br>Update</button>
+  </div>
+</div>
+
+<script>
+// Keys localStorage se aayengi — GitHub mein koi key nahi!
+let GROQ_KEY=localStorage.getItem('j_groq')||'';
+let GITHUB_TOKEN=localStorage.getItem('j_token')||'';
+let GITHUB_USER=localStorage.getItem('j_user')||'';
+let GITHUB_REPO=localStorage.getItem('j_repo')||'';
+let GITHUB_FILE=localStorage.getItem('j_file')||'index.html';
+
+let memory=[],todos=JSON.parse(localStorage.getItem('j_todos')||'[]');
+let notes=JSON.parse(localStorage.getItem('j_notes')||'[]');
+let expenses=JSON.parse(localStorage.getItem('j_exp')||'[]');
+let diary=JSON.parse(localStorage.getItem('j_diary')||'[]');
+let habits=JSON.parse(localStorage.getItem('j_habits')||'[]');
+let micOn=false,recognition=null,bgAngle=0,hudAngle=0;
+let isTalking=false,ytUrl='',timerInterval=null,timerSec=0;
+const moods=['😊','😎','🤔','😄','🧠'];let moodIdx=0;
+
+// BG CANVAS
+const bgCanvas=document.getElementById('bg-canvas');
+const bgCtx=bgCanvas.getContext('2d');
+function resizeBg(){bgCanvas.width=window.innerWidth;bgCanvas.height=window.innerHeight;}
+resizeBg();window.addEventListener('resize',resizeBg);
+function drawBg(){
+  bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);
+  for(let i=0;i<80;i++){
+    const x=(Math.sin(i*137.5+bgAngle*0.001)*bgCanvas.width/2+bgCanvas.width/2)%bgCanvas.width;
+    const y=(Math.cos(i*97.3)*bgCanvas.height/2+bgCanvas.height/2)%bgCanvas.height;
+    bgCtx.beginPath();bgCtx.arc(x,y,0.8,0,Math.PI*2);
+    bgCtx.fillStyle='rgba(255,255,255,0.25)';bgCtx.fill();
+  }
+  bgAngle++;requestAnimationFrame(drawBg);
+}
+drawBg();
+
+// HUD CANVAS
+const hudCanvas=document.getElementById('hud-canvas');
+const hudCtx=hudCanvas.getContext('2d');
+function resizeHud(){const w=document.getElementById('hud-wrap');hudCanvas.width=w.offsetWidth;hudCanvas.height=w.offsetHeight;}
+setTimeout(resizeHud,200);window.addEventListener('resize',resizeHud);
+function drawHud(){
+  if(!hudCanvas.width||!hudCanvas.height){hudAngle++;requestAnimationFrame(drawHud);return;}
+  hudCtx.clearRect(0,0,hudCanvas.width,hudCanvas.height);
+  const cx=hudCanvas.width/2,cy=hudCanvas.height/2;
+  const glow=isTalking?1.8:1;
+  hudCtx.strokeStyle='rgba(0,212,255,0.04)';hudCtx.lineWidth=0.5;
+  for(let x=0;x<hudCanvas.width;x+=30){hudCtx.beginPath();hudCtx.moveTo(x,0);hudCtx.lineTo(x,hudCanvas.height);hudCtx.stroke();}
+  for(let y=0;y<hudCanvas.height;y+=30){hudCtx.beginPath();hudCtx.moveTo(0,y);hudCtx.lineTo(hudCanvas.width,y);hudCtx.stroke();}
+  [{r:130,spd:0.003,dash:[12,8],col:`rgba(0,180,255,${0.3*glow})`},
+   {r:110,spd:-0.005,dash:[6,12],col:`rgba(0,212,255,${0.4*glow})`},
+   {r:90,spd:0.008,dash:[15,5],col:`rgba(0,212,255,${0.25*glow})`},
+   {r:70,spd:-0.006,dash:[8,8],col:`rgba(0,255,200,${0.3*glow})`}
+  ].forEach(r=>{
+    hudCtx.save();hudCtx.translate(cx,cy);hudCtx.rotate(hudAngle*r.spd*100);
+    hudCtx.beginPath();hudCtx.setLineDash(r.dash);hudCtx.arc(0,0,r.r,0,Math.PI*2);
+    hudCtx.strokeStyle=r.col;hudCtx.lineWidth=isTalking?2:1.5;hudCtx.stroke();hudCtx.restore();
+  });
+  hudCtx.setLineDash([4,4]);hudCtx.strokeStyle=`rgba(0,212,255,${0.4*glow})`;hudCtx.lineWidth=1;
+  [[cx-160,cy,cx-90,cy],[cx+90,cy,cx+160,cy],[cx,cy-130,cx,cy-70],[cx,cy+70,cx,cy+130]].forEach(l=>{
+    hudCtx.beginPath();hudCtx.moveTo(l[0],l[1]);hudCtx.lineTo(l[2],l[3]);hudCtx.stroke();
+  });
+  hudCtx.setLineDash([]);
+  hudCtx.strokeStyle=`rgba(0,212,255,${0.5*glow})`;hudCtx.lineWidth=1.5;
+  [[cx-145,cy-125,1,1],[cx+145,cy-125,-1,1],[cx-145,cy+125,1,-1],[cx+145,cy+125,-1,-1]].forEach(c=>{
+    hudCtx.beginPath();hudCtx.moveTo(c[0],c[1]);hudCtx.lineTo(c[0]+c[2]*20,c[1]);hudCtx.stroke();
+    hudCtx.beginPath();hudCtx.moveTo(c[0],c[1]);hudCtx.lineTo(c[0],c[1]+c[3]*20);hudCtx.stroke();
+  });
+  const dc=isTalking?12:8;
+  for(let i=0;i<dc;i++){
+    const a=hudAngle*0.015+(i*Math.PI*2/dc);
+    hudCtx.beginPath();hudCtx.arc(cx+Math.cos(a)*128,cy+Math.sin(a)*128,isTalking?4:2.5,0,Math.PI*2);
+    hudCtx.fillStyle=`rgba(0,212,255,${isTalking?0.9:0.7})`;
+    hudCtx.shadowBlur=isTalking?20:10;hudCtx.shadowColor='#00d4ff';
+    hudCtx.fill();hudCtx.shadowBlur=0;
+  }
+  const grd=hudCtx.createRadialGradient(cx,cy,0,cx,cy,isTalking?60:35);
+  grd.addColorStop(0,`rgba(0,212,255,${isTalking?0.7:0.4})`);
+  grd.addColorStop(0.5,`rgba(0,212,255,${isTalking?0.2:0.1})`);
+  grd.addColorStop(1,'transparent');
+  hudCtx.beginPath();hudCtx.arc(cx,cy,isTalking?60:35,0,Math.PI*2);
+  hudCtx.fillStyle=grd;hudCtx.fill();
+  hudCtx.beginPath();hudCtx.arc(cx,cy,isTalking?8:5,0,Math.PI*2);
+  hudCtx.fillStyle='rgba(0,212,255,1)';
+  hudCtx.shadowBlur=isTalking?40:20;hudCtx.shadowColor='#00d4ff';
+  hudCtx.fill();hudCtx.shadowBlur=0;
+  hudAngle++;requestAnimationFrame(drawHud);
+}
+drawHud();
+
+// TIME
+function updateTime(){
+  const n=new Date();
+  const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('t-time').innerText=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+':'+String(n.getSeconds()).padStart(2,'0');
+  document.getElementById('t-date').innerText=days[n.getDay()].substring(0,3)+', '+String(n.getDate()).padStart(2,'0')+' '+months[n.getMonth()]+' '+n.getFullYear();
+  document.getElementById('t-day').innerText=days[n.getDay()];
+}
+setInterval(updateTime,1000);updateTime();
+
+// STATS
+function updateStats(){
+  const cpu=Math.floor(Math.random()*30+15);
+  const ram=Math.floor(Math.random()*20+45);
+  document.getElementById('s-cpu').innerText=cpu+'%';
+  document.getElementById('s-ram').innerText=ram+'%';
+  document.getElementById('stat-cpu').innerText=cpu+'%';
+  document.getElementById('stat-cpu-bar').style.width=cpu+'%';
+  document.getElementById('stat-ram').innerText=ram+'%';
+  document.getElementById('stat-ram-bar').style.width=ram+'%';
+  if(navigator.getBattery){navigator.getBattery().then(b=>document.getElementById('s-bat').innerText=Math.floor(b.level*100)+'%');}
+}
+setInterval(updateStats,3000);updateStats();
+
+// WEATHER
+async function getWeather(){
+  try{
+    if(navigator.geolocation){
+      navigator.geolocation.getCurrentPosition(async p=>{
+        const lat=p.coords.latitude,lng=p.coords.longitude;
+        document.getElementById('loc-lat').innerText='Lat: '+lat.toFixed(4)+' N';
+        document.getElementById('loc-lng').innerText='Long: '+lng.toFixed(4)+' E';
+        const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true&hourly=relativehumidity_2m`);
+        const d=await r.json();const w=d.current_weather;
+        const codes={0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',61:'🌧️',80:'🌦️',95:'⛈️'};
+        const descs={0:'Saaf',1:'Thoda Badal',2:'Badal',3:'Gehre Badal',45:'Fog',61:'Baarish',80:'Hafif Baarish',95:'Toofan'};
+        document.getElementById('w-icon').innerText=codes[w.weathercode]||'🌡️';
+        document.getElementById('w-temp').innerText=w.temperature+'°C';
+        document.getElementById('w-desc').innerText=descs[w.weathercode]||'Mausam';
+        document.getElementById('w-wind').innerText='💨 '+w.windspeed+' km/h';
+        document.getElementById('w-hum').innerText='💧 '+(d.hourly?.relativehumidity_2m?.[0]||62)+'%';
+      },()=>document.getElementById('loc-lat').innerText='Location OFF');
+    }
+  }catch(e){}
+}
+getWeather();setInterval(getWeather,300000);
+
+// CHAT
+function addMsg(who,text){
+  const chat=document.getElementById('chat-area');
+  const n=new Date();
+  const t=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
+  const div=document.createElement('div');
+  if(who==='user'){
+    div.className='msg-user';
+    div.innerHTML=`<div class="bubble">${text}</div><div class="msg-time">${t}</div>`;
+  }else{
+    div.className='msg-ai';
+    div.innerHTML=`<div class="bubble"><div class="ai-header">〜∞ JARVIS</div>${text}<div class="msg-time">${t}</div></div>`;
+    isTalking=true;setTimeout(()=>isTalking=false,3000);
+  }
+  div.onclick=()=>{if(who==='ai')speak(text);};
+  chat.appendChild(div);chat.scrollTop=chat.scrollHeight;
+  document.getElementById('mem-count').innerText=memory.length+' messages';
+}
+
+// SEND MSG
+async function sendMsg(){
+  const inp=document.getElementById('msg-input');
+  const text=inp.value.trim();
+  if(!text)return;
+  if(!GROQ_KEY){openPanel('setup');showNotif('Pehle setup karo!');return;}
+  inp.value='';
+  addMsg('user',text);
+  document.getElementById('mem-status').innerText='THINKING...';
+  memory.push({role:'user',content:text});
+  if(memory.length>20)memory=memory.slice(-20);
+  const now=new Date();
+  const sys=`Tum JARVIS ho — Abuzar SK ke personal AI. HAMESHA Hindi mein jawab do. Dost ki tarah baat karo. Aaj: ${now.toLocaleDateString('hi-IN')}, Time: ${now.toLocaleTimeString('hi-IN')}`;
+  try{
+    const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'system',content:sys},...memory.slice(-10)],max_tokens:800})
+    });
+    const data=await r.json();
+    if(data.choices){
+      const reply=data.choices[0].message.content;
+      memory.push({role:'assistant',content:reply});
+      addMsg('ai',reply);speak(reply);
+      document.getElementById('mem-status').innerText='AI READY';
+    }else{
+      addMsg('ai','Error: '+JSON.stringify(data).substring(0,100));
+      document.getElementById('mem-status').innerText='ERROR';
+    }
+  }catch(e){
+    addMsg('ai','Connection error: '+e.message);
+    document.getElementById('mem-status').innerText='ERROR';
+  }
+}
+
+// SELF UPDATE
+async function startSelfUpdate(){
+  const req=document.getElementById('update-req')?.value.trim();
+  if(!req){showNotif('Kya update karna hai likho!');return;}
+  if(!GROQ_KEY||!GITHUB_TOKEN){openPanel('setup');showNotif('Pehle setup karo!');return;}
+  const log=document.getElementById('update-log-panel');
+  if(log)log.innerHTML='🤖 Jarvis update shuru...<br>';
+  document.getElementById('update-status').innerText='UPDATING...';
+  const currentCode=document.documentElement.outerHTML;
+  const prompt=`Tum JARVIS ho. User ne yeh update manga: "${req}". Current HTML code mein update karo aur POORA updated HTML code wapas do. Sirf code do, koi explanation nahi. <!DOCTYPE html> se shuru karo. CURRENT CODE: ${currentCode.substring(0,6000)}`;
+  try{
+    if(log)log.innerHTML+='📡 AI se naya code maang raha hoon...<br>';
+    const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'user',content:prompt}],max_tokens:4000})
+    });
+    const data=await r.json();
+    if(data.choices){
+      let newCode=data.choices[0].message.content;
+      newCode=newCode.replace(/```html/g,'').replace(/```/g,'').trim();
+      if(log)log.innerHTML+='✅ Naya code mila! GitHub mein save kar raha hoon...<br>';
+      const getR=await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${GITHUB_FILE}`,{
+        headers:{'Authorization':'token '+GITHUB_TOKEN,'Accept':'application/vnd.github.v3+json'}
+      });
+      const getData=await getR.json();
+      if(!getData.sha){if(log)log.innerHTML+='❌ GitHub error: '+JSON.stringify(getData).substring(0,100)+'<br>';return;}
+      const encoded=btoa(unescape(encodeURIComponent(newCode)));
+      const putR=await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${GITHUB_FILE}`,{
+        method:'PUT',
+        headers:{'Authorization':'token '+GITHUB_TOKEN,'Content-Type':'application/json'},
+        body:JSON.stringify({message:'JARVIS Auto Update: '+req,content:encoded,sha:getData.sha})
+      });
+      const putData=await putR.json();
+      if(putData.content){
+        if(log)log.innerHTML+='🎉 SUCCESS! 3 second mein refresh...<br>';
+        document.getElementById('update-status').innerText='UPDATED!';
+        showNotif('✅ Jarvis update ho gaya!');
+        setTimeout(()=>location.reload(),3000);
+      }else{
+        if(log)log.innerHTML+='❌ Error: '+JSON.stringify(putData).substring(0,100)+'<br>';
+        document.getElementById('update-status').innerText='ERROR';
+      }
+    }
+  }catch(e){
+    if(log)log.innerHTML+='❌ Error: '+e.message+'<br>';
+    document.getElementById('update-status').innerText='ERROR';
+  }
+}
+
+// SETUP SAVE
+function saveSetup(){
+  const groq=document.getElementById('s-groq')?.value.trim();
+  const token=document.getElementById('s-token')?.value.trim();
+  const user=document.getElementById('s-user')?.value.trim();
+  const repo=document.getElementById('s-repo')?.value.trim();
+  if(!groq){showNotif('Groq API key daalo!');return;}
+  if(groq)localStorage.setItem('j_groq',groq);
+  if(token)localStorage.setItem('j_token',token);
+  if(user)localStorage.setItem('j_user',user);
+  if(repo)localStorage.setItem('j_repo',repo);
+  localStorage.setItem('j_file','index.html');
+  GROQ_KEY=groq||GROQ_KEY;
+  GITHUB_TOKEN=token||GITHUB_TOKEN;
+  GITHUB_USER=user||GITHUB_USER;
+  GITHUB_REPO=repo||GITHUB_REPO;
+  closePanel();
+  showNotif('✅ Setup save ho gaya!');
+  addMsg('ai','Setup complete! Ab main kaam karne ke liye taiyar hoon Abuzar bhai! 😊');
+}
+
+// SPEAK
+function speak(text){
+  if('speechSynthesis' in window){
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text.substring(0,400));
+    u.lang='hi-IN';u.rate=1.05;u.pitch=1;
+    window.speechSynthesis.speak(u);
+  }
+}
+
+// MIC
+function toggleMic(){
+  micOn=!micOn;
+  const btn=document.getElementById('mic-btn-main');
+  if(micOn){btn.innerText='🎤 Mic ON';btn.classList.add('on');startListening();}
+  else{btn.innerText='🎤 Mic OFF';btn.classList.remove('on');stopListening();}
+}
+function startListening(){
+  if(!('webkitSpeechRecognition' in window)){showNotif('Voice nahi hai!');return;}
+  recognition=new webkitSpeechRecognition();
+  recognition.lang='hi-IN';recognition.continuous=true;recognition.interimResults=true;
+  recognition.onresult=e=>{
+    let interim='',final='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(e.results[i].isFinal)final+=e.results[i][0].transcript;
+      else interim+=e.results[i][0].transcript;
+    }
+    if(interim||final){document.getElementById('voice-overlay').style.display='block';document.getElementById('voice-text').innerText=interim||final;}
+    if(final){document.getElementById('voice-overlay').style.display='none';document.getElementById('msg-input').value=final;sendMsg();}
+  };
+  recognition.onerror=()=>{if(micOn)setTimeout(startListening,1000);};
+  recognition.onend=()=>{if(micOn)recognition.start();else document.getElementById('voice-overlay').style.display='none';};
+  recognition.start();
+}
+function stopListening(){document.getElementById('voice-overlay').style.display='none';if(recognition)recognition.stop();}
+function clearMem(){memory=[];document.getElementById('mem-count').innerText='0 messages';showNotif('Memory clear!');}
+function changeMood(){moodIdx=(moodIdx+1)%moods.length;showNotif('Mood: '+moods[moodIdx]);}
+function sleepMode(){document.getElementById('sleep-screen').style.display='flex';}
+function wakeUp(){document.getElementById('sleep-screen').style.display='none';}
+function openYT(){if(ytUrl)window.open(ytUrl,'_blank');else showNotif('Jarvis se gaana maango!');}
+function showNotif(msg){const n=document.getElementById('notif');n.innerText=msg;n.style.display='block';setTimeout(()=>n.style.display='none',3000);}
+function askJarvis(text){document.getElementById('msg-input').value=text;sendMsg();}
+
+// PANELS
+function openPanel(type){
+  const panel=document.getElementById('panel');
+  const title=document.getElementById('panel-title');
+  const body=document.getElementById('panel-body');
+  panel.style.display='flex';
+
+  if(type==='setup'){
+    title.innerText='⚙️ JARVIS SETUP';
+    body.innerHTML=`
+      <div class="p-item">
+        <div class="p-item-title">🔑 API Details</div>
+        <div class="p-item-val">Yeh sirf aapke phone mein save hoga — GitHub mein nahi!</div>
+      </div>
+      <input class="p-input" id="s-groq" placeholder="Groq API Key (gsk_...)" value="${GROQ_KEY}">
+      <input class="p-input" id="s-token" placeholder="GitHub Token (ghp_...)" value="${GITHUB_TOKEN}">
+      <input class="p-input" id="s-user" placeholder="GitHub Username" value="${GITHUB_USER}">
+      <input class="p-input" id="s-repo" placeholder="GitHub Repo Name" value="${GITHUB_REPO}">
+      <button class="p-btn" style="color:#00ff88;border-color:#00ff8866" onclick="saveSetup()">💾 SAVE KARO</button>
+      <button class="p-btn" style="color:#ff4444;border-color:#ff444466" onclick="resetSetup()">🗑️ RESET</button>`;
+  }
+  else if(type==='selfupdate'){
+    title.innerText='⚡ JARVIS SELF UPDATE';
+    body.innerHTML=`
+      <div class="p-item">
+        <div class="p-item-title">Jarvis ko kya update karna hai?</div>
+        <div class="p-item-val">Batao — Jarvis khud code likhega aur GitHub mein save karega!</div>
+      </div>
+      <textarea class="p-input" id="update-req" style="height:80px;resize:none" placeholder="Jaise: Dark mode add karo, Ya: Naya feature add karo..."></textarea>
+      <button class="p-btn" style="color:#00ff88;border-color:#00ff8866" onclick="startSelfUpdate()">⚡ JARVIS UPDATE KARO</button>
+      <div id="update-log-panel" style="background:#001a2e;border-radius:8px;padding:10px;font-size:10px;color:#00d4ff88;min-height:60px;margin-top:8px"></div>`;
+  }
+  else if(type==='todo'){
+    title.innerText='📋 KAAM KI LIST';
+    body.innerHTML=`<div style="display:flex;gap:8px;margin-bottom:12px"><input class="p-input" id="todo-inp" placeholder="Naya kaam..." style="margin:0;flex:1"><button class="p-btn" onclick="addTodo()" style="width:auto;padding:9px 14px">+</button></div><div id="todo-list"></div>`;
+    renderTodos();
+  }else if(type==='notes'){
+    title.innerText='📝 NOTES';
+    body.innerHTML=`<textarea class="p-input" id="note-inp" style="height:80px;resize:none" placeholder="Note likho..."></textarea><button class="p-btn" onclick="saveNote()">💾 SAVE</button><div id="notes-list" style="margin-top:10px"></div>`;
+    renderNotes();
+  }else if(type==='expense'){
+    title.innerText='💰 EXPENSE TRACKER';
+    body.innerHTML=`<input class="p-input" id="exp-desc" placeholder="Kya kharcha hua?"><input class="p-input" id="exp-amt" type="number" placeholder="Kitne rupaye?"><button class="p-btn" onclick="addExpense()">➕ ADD</button><div id="exp-total" style="text-align:center;font-size:18px;color:#00ff88;margin:8px">Total: ₹0</div><div id="exp-list"></div>`;
+    renderExpenses();
+  }else if(type==='timer'){
+    title.innerText='⏱️ TIMER';
+    body.innerHTML=`<div id="timer-display" style="font-size:48px;text-align:center;color:#00d4ff;text-shadow:0 0 20px #00d4ff;margin:20px 0">00:00</div><div style="display:flex;gap:8px;margin-bottom:12px"><button class="p-btn" onclick="startTimer()">▶ START</button><button class="p-btn" onclick="pauseTimer()">⏸ PAUSE</button><button class="p-btn" onclick="resetTimer()">🔄 RESET</button></div><input class="p-input" id="timer-mins" type="number" placeholder="Minutes set karo..."><button class="p-btn" onclick="setTimer()">⏰ SET TIMER</button>`;
+  }else if(type==='calc'){
+    title.innerText='🔢 CALCULATOR';
+    body.innerHTML=`<div id="calc-disp" style="background:#001a2e;border:1px solid #00d4ff33;border-radius:8px;padding:12px;font-size:22px;text-align:right;min-height:55px;margin-bottom:10px;color:#00d4ff;word-break:break-all"></div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">${['7','8','9','÷','4','5','6','×','1','2','3','−','0','.','=','+','C','%','√','±'].map(b=>`<button class="p-btn" onclick="calc('${b}')" style="padding:14px;font-size:16px">${b}</button>`).join('')}</div>`;
+  }else if(type==='reminder'){
+    title.innerText='🔔 REMINDER';
+    body.innerHTML=`<input class="p-input" id="rem-text" placeholder="Reminder kya hai?"><input class="p-input" id="rem-mins" type="number" placeholder="Kitne minute baad?"><button class="p-btn" onclick="setReminder()">⏰ SET</button>`;
+  }else if(type==='diary'){
+    title.innerText='📖 DIARY';
+    body.innerHTML=`<div style="color:#00d4ff88;font-size:10px;margin-bottom:6px">${new Date().toLocaleDateString('hi-IN')}</div><textarea class="p-input" id="diary-inp" style="height:100px;resize:none" placeholder="Aaj ka din..."></textarea><button class="p-btn" onclick="saveDiary()">💾 SAVE</button><div id="diary-list" style="margin-top:10px"></div>`;
+    renderDiary();
+  }else if(type==='habit'){
+    title.innerText='✅ HABIT TRACKER';
+    body.innerHTML=`<input class="p-input" id="habit-inp" placeholder="Nai habit..."><button class="p-btn" onclick="addHabit()">+ ADD</button><div id="habit-list" style="margin-top:10px"></div>`;
+    renderHabits();
+  }else if(type==='currency'){
+    title.innerText='💱 CURRENCY';
+    body.innerHTML=`<input class="p-input" id="curr-inp" placeholder="Kitne USD?"><button class="p-btn" onclick="convertCurr()">💱 TO INR</button><div id="curr-result" style="font-size:20px;text-align:center;color:#00ff88;margin:12px"></div><button class="p-btn" onclick="askJarvis('Aaj ka dollar aur euro rate batao')">📈 JARVIS SE POOCHHO</button>`;
+  }else if(type==='cricket'){
+    title.innerText='🏏 CRICKET';
+    body.innerHTML=`<button class="p-btn" onclick="askJarvis('Aaj ka cricket score batao')">🏏 LATEST SCORE</button><button class="p-btn" onclick="askJarvis('IPL 2025 update batao')">🏆 IPL UPDATE</button><button class="p-btn" onclick="askJarvis('India upcoming matches batao')">📅 UPCOMING</button>`;
+  }else if(type==='story'){
+    title.innerText='🎬 STORY/SCRIPT';
+    body.innerHTML=`<textarea class="p-input" id="story-inp" style="height:80px;resize:none" placeholder="Idea likho..."></textarea><button class="p-btn" onclick="writeStory()">✍️ STORY</button><button class="p-btn" onclick="writeScript()">🎬 SCRIPT</button><button class="p-btn" onclick="writePoem()">📜 POEM</button>`;
+  }else if(type==='business'){
+    title.innerText='💼 BUSINESS';
+    body.innerHTML=`<input class="p-input" id="biz-inp" placeholder="Field?"><button class="p-btn" onclick="getBizIdea()">💡 IDEA</button><button class="p-btn" onclick="askJarvis('Mobile se free mein shuru hone wala business plan batao')">📋 PLAN</button><button class="p-btn" onclick="askJarvis('Online earning ke 10 tarike batao')">💰 EARNING</button>`;
+  }else if(type==='news'){
+    title.innerText='📰 NEWS';
+    body.innerHTML=`<button class="p-btn" onclick="askJarvis('Aaj ki top India news batao')">🇮🇳 INDIA</button><button class="p-btn" onclick="askJarvis('World news batao')">🌍 WORLD</button><button class="p-btn" onclick="askJarvis('Tech aur AI news batao')">💻 TECH</button>`;
+  }
+}
+
+function closePanel(){document.getElementById('panel').style.display='none';}
+
+function resetSetup(){
+  localStorage.removeItem('j_groq');localStorage.removeItem('j_token');
+  localStorage.removeItem('j_user');localStorage.removeItem('j_repo');
+  GROQ_KEY='';GITHUB_TOKEN='';GITHUB_USER='';GITHUB_REPO='';
+  showNotif('Reset ho gaya!');closePanel();
+}
+
+// TODO
+function addTodo(){const inp=document.getElementById('todo-inp');if(!inp.value.trim())return;todos.push({text:inp.value.trim(),done:false});localStorage.setItem('j_todos',JSON.stringify(todos));inp.value='';renderTodos();}
+function renderTodos(){const list=document.getElementById('todo-list');if(!list)return;list.innerHTML=todos.length?todos.map((t,i)=>`<div class="todo-row"><input type="checkbox" ${t.done?'checked':''} onchange="toggleTodo(${i})"><span class="${t.done?'done':''}">${t.text}</span><span class="del" onclick="delTodo(${i})">✕</span></div>`).join(''):'<div style="color:#00d4ff44;text-align:center;padding:20px">Koi kaam nahi! 🎉</div>';}
+function toggleTodo(i){todos[i].done=!todos[i].done;localStorage.setItem('j_todos',JSON.stringify(todos));renderTodos();}
+function delTodo(i){todos.splice(i,1);localStorage.setItem('j_todos',JSON.stringify(todos));renderTodos();}
+function saveNote(){const inp=document.getElementById('note-inp');if(!inp.value.trim())return;notes.unshift({text:inp.value.trim(),time:new Date().toLocaleString()});if(notes.length>30)notes=notes.slice(0,30);localStorage.setItem('j_notes',JSON.stringify(notes));inp.value='';renderNotes();showNotif('Note save!');}
+function renderNotes(){const list=document.getElementById('notes-list');if(!list)return;list.innerHTML=notes.map((n,i)=>`<div class="p-item"><div style="font-size:9px;color:#00d4ff44">${n.time}<span style="float:right;color:#ff4444;cursor:pointer" onclick="delNote(${i})">✕</span></div><div style="color:#00ffaa;font-size:12px;margin-top:4px">${n.text}</div></div>`).join('');}
+function delNote(i){notes.splice(i,1);localStorage.setItem('j_notes',JSON.stringify(notes));renderNotes();}
+function addExpense(){const desc=document.getElementById('exp-desc').value.trim();const amt=parseFloat(document.getElementById('exp-amt').value);if(!desc||!amt)return;expenses.push({desc,amt});localStorage.setItem('j_exp',JSON.stringify(expenses));document.getElementById('exp-desc').value='';document.getElementById('exp-amt').value='';renderExpenses();}
+function renderExpenses(){const list=document.getElementById('exp-list');const total=document.getElementById('exp-total');if(!list)return;const sum=expenses.reduce((a,e)=>a+e.amt,0);total.innerText='Total: ₹'+sum.toFixed(2);list.innerHTML=expenses.map((e,i)=>`<div class="p-item"><div style="display:flex;justify-content:space-between"><span>${e.desc}</span><span style="color:#00ff88">₹${e.amt}</span><span style="color:#ff4444;cursor:pointer" onclick="delExp(${i})">✕</span></div></div>`).join('');}
+function delExp(i){expenses.splice(i,1);localStorage.setItem('j_exp',JSON.stringify(expenses));renderExpenses();}
+function startTimer(){timerInterval=setInterval(()=>{timerSec++;updateTimerDisp();},1000);}
+function pauseTimer(){clearInterval(timerInterval);}
+function resetTimer(){clearInterval(timerInterval);timerSec=0;updateTimerDisp();}
+function updateTimerDisp(){const m=Math.floor(timerSec/60),s=timerSec%60;const el=document.getElementById('timer-display');if(el)el.innerText=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');}
+function setTimer(){const mins=parseInt(document.getElementById('timer-mins').value);if(!mins)return;timerSec=0;clearInterval(timerInterval);const target=mins*60;timerInterval=setInterval(()=>{timerSec++;updateTimerDisp();if(timerSec>=target){clearInterval(timerInterval);showNotif('⏰ Timer khatam!');speak('Timer khatam Abuzar bhai!');}},1000);showNotif('Timer: '+mins+' min');}
+let calcVal='';
+function calc(v){const disp=document.getElementById('calc-disp');if(!disp)return;if(v==='C'){calcVal='';disp.innerText='';}else if(v==='='){try{const result=eval(calcVal.replace('×','*').replace('÷','/').replace('−','-'));disp.innerText=calcVal+'='+result;calcVal=String(result);}catch{disp.innerText='Error';}}else{calcVal+=v;disp.innerText=calcVal;}}
+function setReminder(){const text=document.getElementById('rem-text').value;const mins=parseInt(document.getElementById('rem-mins').value);if(!text||!mins)return;setTimeout(()=>{showNotif('🔔 '+text);addMsg('ai','🔔 Reminder: '+text);speak('Reminder: '+text);},mins*60*1000);showNotif('✅ '+mins+' min baad');closePanel();}
+function saveDiary(){const inp=document.getElementById('diary-inp');if(!inp.value.trim())return;diary.unshift({text:inp.value.trim(),date:new Date().toLocaleDateString()});if(diary.length>30)diary=diary.slice(0,30);localStorage.setItem('j_diary',JSON.stringify(diary));inp.value='';renderDiary();showNotif('Diary save!');}
+function renderDiary(){const list=document.getElementById('diary-list');if(!list)return;list.innerHTML=diary.map((d,i)=>`<div class="p-item"><div style="font-size:9px;color:#00d4ff44">${d.date}<span style="float:right;color:#ff4444;cursor:pointer" onclick="delDiary(${i})">✕</span></div><div style="color:#00ffaa;font-size:12px;margin-top:4px">${d.text}</div></div>`).join('');}
+function delDiary(i){diary.splice(i,1);localStorage.setItem('j_diary',JSON.stringify(diary));renderDiary();}
+function addHabit(){const inp=document.getElementById('habit-inp');if(!inp.value.trim())return;habits.push({name:inp.value.trim(),streak:0});localStorage.setItem('j_habits',JSON.stringify(habits));inp.value='';renderHabits();}
+function renderHabits(){const list=document.getElementById('habit-list');if(!list)return;list.innerHTML=habits.map((h,i)=>`<div class="p-item"><div style="display:flex;justify-content:space-between;align-items:center"><span>${h.name}</span><span style="color:#ffaa00">🔥${h.streak}</span><button class="p-btn" onclick="doneHabit(${i})" style="width:auto;padding:4px 10px;font-size:10px">✅</button><span style="color:#ff4444;cursor:pointer" onclick="delHabit(${i})">✕</span></div></div>`).join('');}
+function doneHabit(i){habits[i].streak++;localStorage.setItem('j_habits',JSON.stringify(habits));renderHabits();showNotif('🔥 Streak: '+habits[i].streak);}
+function delHabit(i){habits.splice(i,1);localStorage.setItem('j_habits',JSON.stringify(habits));renderHabits();}
+async function convertCurr(){const amt=parseFloat(document.getElementById('curr-inp').value);if(!amt)return;try{const r=await fetch('https://api.exchangerate-api.com/v4/latest/USD');const d=await r.json();document.getElementById('curr-result').innerText='₹'+(amt*d.rates.INR).toFixed(2);}catch{askJarvis(amt+' USD kitne INR hain?');closePanel();}}
+function writeStory(){const idea=document.getElementById('story-inp').value;askJarvis((idea||'interesting topic')+' par Hindi story likho');closePanel();}
+function writeScript(){const idea=document.getElementById('story-inp').value;askJarvis((idea||'interesting topic')+' par movie script Hindi mein likho');closePanel();}
+function writePoem(){const idea=document.getElementById('story-inp').value;askJarvis((idea||'zindagi')+' par Hindi poem likho');closePanel();}
+function getBizIdea(){const field=document.getElementById('biz-inp').value;askJarvis((field||'technology')+' mein mobile se free business idea do');closePanel();}
+
+window.onload=function(){
+  if(!GROQ_KEY){
+    openPanel('setup');
+  }else{
+    addMsg('ai','Assalamualaikum Abuzar bhai! Main JARVIS hoon — aapka personal AI. Kya kaam hai? 😊');
+  }
+};
+</script>
+</body>
+</html>
