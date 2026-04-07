@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="hi">
-<head>
+<html lang="hi"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>JARVIS PRO — ABUZAR</title>
@@ -18,7 +16,7 @@ canvas{position:fixed;top:0;left:0;z-index:0;pointer-events:none}
 #time-box .time-big{font-size:20px;font-weight:bold;color:#00d4ff;text-shadow:0 0 15px #00d4ff;text-align:center}
 #time-box .time-date{font-size:10px;color:#00d4ff88;text-align:center}
 #top-center{grid-column:2;grid-row:1;text-align:center;padding:4px}
-#jarvis-title{font-size:26px;font-weight:bold;color:#00d4ff;letter-spacing:8px;text-shadow:0 0 20px #00d4ff}
+#jarvis-title{font-size:26px;font-weight:bold;color:#ff4444;letter-spacing:8px;text-shadow:0 0 20px #ff4444}
 #jarvis-online{font-size:9px;letter-spacing:4px;color:#00ff88;margin-top:2px}
 #top-right{grid-column:3;grid-row:1;display:flex;flex-direction:column;gap:6px}
 #mid-left{grid-column:1;grid-row:2;display:flex;flex-direction:column;gap:6px;overflow-y:auto}
@@ -81,32 +79,39 @@ canvas{position:fixed;top:0;left:0;z-index:0;pointer-events:none}
 </style>
 </head>
 <body>
-<canvas id="bg-canvas"></canvas>
+<canvas id="bg-canvas" width="980" height="1885"></canvas>
 <div id="notif"></div>
 <div id="voice-overlay">🎤 <span id="voice-text">Sun raha hoon...</span></div>
 <div id="sleep-screen" onclick="wakeUp()"><div class="sleep-text">TAP TO WAKE</div></div>
 
-<div id="panel">
+<div id="panel" style="display: flex;">
   <div id="panel-header">
-    <div id="panel-title">PANEL</div>
+    <div id="panel-title">⚡ JARVIS SELF UPDATE</div>
     <button id="panel-close" onclick="closePanel()">✕ BAND</button>
   </div>
-  <div id="panel-body"></div>
+  <div id="panel-body">
+      <div class="p-item">
+        <div class="p-item-title">Jarvis ko kya update karna hai?</div>
+        <div class="p-item-val">Batao — Jarvis khud code likhega aur GitHub mein save karega!</div>
+      </div>
+      <textarea class="p-input" id="update-req" style="height:80px;resize:none" placeholder="Jaise: Dark mode add karo, Ya: Naya feature add karo..."></textarea>
+      <button class="p-btn" style="color:#00ff88;border-color:#00ff8866" onclick="startSelfUpdate()">⚡ JARVIS UPDATE KARO</button>
+      <div id="update-log-panel" style="background:#001a2e;border-radius:8px;padding:10px;font-size:10px;color:#00d4ff88;min-height:60px;margin-top:8px">🤖 Jarvis update shuru...<br></div></div>
 </div>
 
 <div id="app">
   <div id="top-left">
     <div class="box" id="time-box">
       <div class="box-title">TIME</div>
-      <div class="time-big" id="t-time">--:--:--</div>
-      <div class="time-date" id="t-date">--</div>
-      <div class="time-date" id="t-day">--</div>
+      <div class="time-big" id="t-time">09:28:25</div>
+      <div class="time-date" id="t-date">Tue, 07 Apr 2026</div>
+      <div class="time-date" id="t-day">Tuesday</div>
     </div>
     <div class="box">
       <div class="box-title">SYSTEM</div>
-      <div class="box-val">🔋 <span id="s-bat">--%</span></div>
-      <div class="box-val">🖥️ CPU: <span id="s-cpu" class="yellow">--%</span></div>
-      <div class="box-val">💾 RAM: <span id="s-ram" class="green">--%</span></div>
+      <div class="box-val">🔋 <span id="s-bat">3%</span></div>
+      <div class="box-val">🖥️ CPU: <span id="s-cpu" class="yellow">22%</span></div>
+      <div class="box-val">💾 RAM: <span id="s-ram" class="green">52%</span></div>
       <div class="box-val">⚡ <span class="green">JARVIS READY</span></div>
     </div>
   </div>
@@ -127,7 +132,7 @@ canvas{position:fixed;top:0;left:0;z-index:0;pointer-events:none}
     </div>
     <div class="box">
       <div class="box-title">LOCATION</div>
-      <div class="box-val" id="loc-lat">Lat: --</div>
+      <div class="box-val" id="loc-lat">Location OFF</div>
       <div class="box-val" id="loc-lng">Long: --</div>
     </div>
   </div>
@@ -154,21 +159,21 @@ canvas{position:fixed;top:0;left:0;z-index:0;pointer-events:none}
 
   <div id="mid-center">
     <div id="hud-wrap">
-      <canvas id="hud-canvas"></canvas>
+      <canvas id="hud-canvas" width="636" height="1457"></canvas>
     </div>
-    <div id="chat-area"></div>
+    <div id="chat-area"><div class="msg-ai"><div class="bubble"><div class="ai-header">〜∞ JARVIS</div>Assalamualaikum Abuzar bhai! Main JARVIS hoon — aapka personal AI. Kya kaam hai? 😊<div class="msg-time">09:27</div></div></div></div>
   </div>
 
   <div id="mid-right">
     <div class="box">
       <div class="box-title">STATS</div>
       <div class="stat-row">
-        <div class="stat-label"><span>CPU</span><span id="stat-cpu">--%</span></div>
-        <div class="stat-bar"><div class="stat-fill" id="stat-cpu-bar" style="width:0%"></div></div>
+        <div class="stat-label"><span>CPU</span><span id="stat-cpu">22%</span></div>
+        <div class="stat-bar"><div class="stat-fill" id="stat-cpu-bar" style="width: 22%;"></div></div>
       </div>
       <div class="stat-row">
-        <div class="stat-label"><span>RAM</span><span id="stat-ram">--%</span></div>
-        <div class="stat-bar"><div class="stat-fill" id="stat-ram-bar" style="width:0%;background:linear-gradient(90deg,#aa00ff,#00d4ff)"></div></div>
+        <div class="stat-label"><span>RAM</span><span id="stat-ram">52%</span></div>
+        <div class="stat-bar"><div class="stat-fill" id="stat-ram-bar" style="width: 52%; background: linear-gradient(90deg, rgb(170, 0, 255), rgb(0, 212, 255));"></div></div>
       </div>
       <div class="stat-row">
         <div class="stat-label"><span>NET</span><span class="green">OK</span></div>
@@ -193,7 +198,7 @@ canvas{position:fixed;top:0;left:0;z-index:0;pointer-events:none}
     </div>
     <div class="box">
       <div class="box-title">AUTO UPDATE</div>
-      <div class="box-val green" id="update-status">READY</div>
+      <div class="box-val green" id="update-status">UPDATING...</div>
       <div class="tool-item" onclick="openPanel('selfupdate')" style="color:#00ff88;font-size:10px">⚡ Update Karo</div>
     </div>
   </div>
@@ -751,5 +756,6 @@ window.onload=function(){
   }
 };
 </script>
-</body>
-</html>
+
+
+</body></html>
