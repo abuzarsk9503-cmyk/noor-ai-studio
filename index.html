@@ -442,33 +442,20 @@ async function startSelfUpdate(){
 
   const currentCode=document.documentElement.outerHTML;
 
-  const prompt=`Tum index.html ko update karne wale AI ho.
+  const prompt=`Tum sirf index.html mein chhota sa change karoge.
 
-Sirf inme se ek format mein jawab do:
+Hamesha isi format mein jawab do:
 
-1)
 SEARCH:
-purani line
+purana exact code
 
 REPLACE:
-nayi line
+naya code
 
-Ya agar nayi line add karni ho:
-
-2)
-AFTER:
-jis line ke baad add karna hai
-
-ADD:
-nayi line
-
-Kabhi bhi poora HTML, poora code, explanation, markdown, ya extra text mat do.
-Sirf SEARCH/REPLACE ya AFTER/ADD do.
-
-User request: ${req}
-
-Current code:
-${currentCode.substring(0,7000)}
+Koi explanation nahi.
+Koi extra text nahi.
+Kabhi bhi poora HTML nahi.
+Sirf wahi line ya block jo badalna hai.
 `;
 
   try{
