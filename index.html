@@ -424,41 +424,55 @@ async function sendMsg(){
 // SELF UPDATE
 async function startSelfUpdate(){
   const req=document.getElementById('update-req')?.value.trim();
-  if(!req){showNotif('Kya update karna hai likho!');return;}
+  if(!req){
+    showNotif('Kya update karna hai likho!');
+    return;
+  }
 
-  if(!GROQ_KEY||!GITHUB_TOKEN){
+  if(!GROQ_KEY || !GITHUB_TOKEN){
     openPanel('setup');
     showNotif('Pehle setup karo!');
     return;
   }
 
   const log=document.getElementById('update-log-panel');
-  if(log)log.innerHTML='🤖 Jarvis update shuru...<br>';
+  if(log) log.innerHTML='🤖 Jarvis update shuru...<br>';
 
   document.getElementById('update-status').innerText='UPDATING...';
 
   const currentCode=document.documentElement.outerHTML;
 
-  const prompt=`Tum sirf index.html ki jis line ko badalna hai uske liye SEARCH aur REPLACE format do.
+  const prompt=`Tum index.html ko update karne wale AI ho.
 
-Format:
+Sirf inme se ek format mein jawab do:
+
+1)
 SEARCH:
 purani line
 
 REPLACE:
 nayi line
 
-Kabhi bhi pura HTML, pura code, <html>, <body>, <style>, ya script wapas mat do.
-Sirf exact line do jo change karni hai.
+Ya agar nayi line add karni ho:
+
+2)
+AFTER:
+jis line ke baad add karna hai
+
+ADD:
+nayi line
+
+Kabhi bhi poora HTML, poora code, explanation, markdown, ya extra text mat do.
+Sirf SEARCH/REPLACE ya AFTER/ADD do.
 
 User request: ${req}
 
 Current code:
-${currentCode.substring(0,6000)}
+${currentCode.substring(0,7000)}
 `;
 
   try{
-    if(log)log.innerHTML+='📡 AI se line update maang raha hoon...<br>';
+    if(log) log.innerHTML+='📡 AI se update maang raha hoon...<br>';
 
     const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{
       method:'POST',
@@ -469,14 +483,14 @@ ${currentCode.substring(0,6000)}
       body:JSON.stringify({
         model:'llama-3.3-70b-versatile',
         messages:[{role:'user',content:prompt}],
-        max_tokens:800
+        max_tokens:1000
       })
     });
 
     const data=await r.json();
 
     if(!data.choices){
-      if(log)log.innerHTML+='❌ AI response nahi mila<br>';
+      if(log) log.innerHTML+='❌ AI response nahi mila<br>';
       document.getElementById('update-status').innerText='ERROR';
       return;
     }
@@ -488,6 +502,8 @@ ${currentCode.substring(0,6000)}
 
     let newCode=currentCode;
 
+    localStorage.setItem('jarvis_backup_code', currentCode);
+
     if(aiReply.includes('SEARCH:') && aiReply.includes('REPLACE:')){
 
       const search=aiReply.split('SEARCH:')[1].split('REPLACE:')[0].trim();
@@ -495,26 +511,34 @@ ${currentCode.substring(0,6000)}
 
       if(currentCode.includes(search)){
         newCode=currentCode.replace(search, replace);
-
-        if(log){
-          log.innerHTML+='✅ Sirf zaroori line change hui<br>';
-          log.innerHTML+='🔍 Search: '+search.substring(0,80)+'...<br>';
-        }
+        if(log) log.innerHTML+='✅ Existing line replace hui<br>';
       }else{
-        if(log)log.innerHTML+='❌ Search wali line code mein nahi mili<br>';
+        if(log) log.innerHTML+='❌ Search line nahi mili<br>';
+        document.getElementById('update-status').innerText='ERROR';
+        return;
+      }
+
+    }else if(aiReply.includes('AFTER:') && aiReply.includes('ADD:')){
+
+      const after=aiReply.split('AFTER:')[1].split('ADD:')[0].trim();
+      const add=aiReply.split('ADD:')[1].trim();
+
+      if(currentCode.includes(after)){
+        newCode=currentCode.replace(after, after + '\n' + add);
+        if(log) log.innerHTML+='✅ Nayi line add hui<br>';
+      }else{
+        if(log) log.innerHTML+='❌ AFTER wali line nahi mili<br>';
         document.getElementById('update-status').innerText='ERROR';
         return;
       }
 
     }else{
-      if(log)log.innerHTML+='❌ AI ne SEARCH/REPLACE format nahi diya<br>';
+      if(log) log.innerHTML+='❌ AI ne galat format diya<br>';
       document.getElementById('update-status').innerText='ERROR';
       return;
     }
 
-    if(log)log.innerHTML+='💾 GitHub mein save kar raha hoon...<br>';
-
-    const getR=await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${GITHUB_FILE}`,{
+    const getR=await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${GITHUB_FILE}` ,{
       headers:{
         'Authorization':'token '+GITHUB_TOKEN,
         'Accept':'application/vnd.github.v3+json'
@@ -523,23 +547,15 @@ ${currentCode.substring(0,6000)}
 
     const getData=await getR.json();
 
-    if(!getData.sha){
-      if(log)log.innerHTML+='❌ GitHub file nahi mili<br>';
-      document.getElementById('update-status').innerText='ERROR';
-      return;
-    }
-
-    const encoded=btoa(unescape(encodeURIComponent(newCode)));
-
-    const putR=await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${GITHUB_FILE}`,{
+    const putR=await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${GITHUB_FILE}` ,{
       method:'PUT',
       headers:{
         'Authorization':'token '+GITHUB_TOKEN,
         'Content-Type':'application/json'
       },
       body:JSON.stringify({
-        message:'JARVIS Safe Update: '+req,
-        content:encoded,
+        message:'Jarvis Update: '+req,
+        content:btoa(unescape(encodeURIComponent(newCode))),
         sha:getData.sha
       })
     });
@@ -547,22 +563,21 @@ ${currentCode.substring(0,6000)}
     const putData=await putR.json();
 
     if(putData.content){
-      if(log)log.innerHTML+='🎉 Update ho gaya! 3 second mein reload...<br>';
-
+      if(log) log.innerHTML+='🎉 GitHub mein save ho gaya!<br>';
       document.getElementById('update-status').innerText='UPDATED!';
-      showNotif('✅ Jarvis update ho gaya!');
-
+      showNotif('Update ho gaya!');
       setTimeout(()=>location.reload(),3000);
     }else{
-      if(log)log.innerHTML+='❌ GitHub save error<br>';
+      if(log) log.innerHTML+='❌ GitHub save fail<br>';
       document.getElementById('update-status').innerText='ERROR';
     }
 
   }catch(e){
-    if(log)log.innerHTML+='❌ Error: '+e.message+'<br>';
+    if(log) log.innerHTML+='❌ Error: '+e.message+'<br>';
     document.getElementById('update-status').innerText='ERROR';
   }
-}
+      }
+
 
 // SETUP SAVE
 function saveSetup(){
@@ -757,4 +772,4 @@ window.onload=function(){
 };
 </script>
 </body>
-</html>ls
+</html>
