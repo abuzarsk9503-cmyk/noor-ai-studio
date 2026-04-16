@@ -1,1 +1,231 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#060c1f" />
+  <title>JARVIS PRO — by Abuzar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@300;400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
 
+  <!-- SETUP SCREEN -->
+  <div id="setup-screen" class="setup-overlay hidden">
+    <div class="setup-box">
+      <div class="setup-logo">
+        <div class="hud-ring small"></div>
+        <span>JARVIS<span class="gold">PRO</span></span>
+      </div>
+      <p class="setup-sub">First Time Setup — Abuzar ke liye</p>
+      <div class="setup-fields">
+        <div class="field-group">
+          <label>🔑 Groq API Key</label>
+          <input type="password" id="setup-groq" placeholder="gsk_..." />
+        </div>
+        <div class="field-group">
+          <label>✨ Gemini API Key</label>
+          <input type="password" id="setup-gemini" placeholder="AIza..." />
+        </div>
+        <div class="field-group">
+          <label>🐙 GitHub Token</label>
+          <input type="password" id="setup-github" placeholder="ghp_..." />
+        </div>
+        <div class="field-group">
+          <label>📁 GitHub Repo (user/repo)</label>
+          <input type="text" id="setup-repo" placeholder="abuzarsk9503/noor-ai-studio" />
+        </div>
+      </div>
+      <button class="btn-gold" onclick="saveSetup()">⚡ ACTIVATE JARVIS</button>
+      <p class="setup-note">Keys localStorage mein save honge — secure hai</p>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="app" class="hidden">
+
+    <!-- HEADER -->
+    <header class="top-bar">
+      <div class="status-dot"></div>
+      <div class="header-title">JARVIS <span class="gold">PRO</span></div>
+      <button class="settings-btn" onclick="openSettings()" title="Settings">⚙</button>
+    </header>
+
+    <!-- HUD CENTER NAV -->
+    <div class="hud-nav-wrap">
+      <div class="hud-outer-ring"></div>
+      <div class="hud-mid-ring"></div>
+      <div class="hud-inner-ring"></div>
+
+      <!-- Nav Buttons around HUD -->
+      <button class="hud-btn btn-chat active" onclick="switchTab('chat')" id="nav-chat">
+        <span class="hud-btn-icon">🤖</span>
+        <span class="hud-btn-label">CHAT AI</span>
+      </button>
+      <button class="hud-btn btn-builder" onclick="switchTab('builder')" id="nav-builder">
+        <span class="hud-btn-icon">📱</span>
+        <span class="hud-btn-label">APP BUILDER</span>
+      </button>
+      <button class="hud-btn btn-movie" onclick="switchTab('movie')" id="nav-movie">
+        <span class="hud-btn-icon">🎬</span>
+        <span class="hud-btn-label">MOVIE MAKER</span>
+      </button>
+
+      <!-- Center Core -->
+      <div class="hud-core" id="hud-core">
+        <div class="core-pulse"></div>
+        <div class="core-text" id="core-label">JARVIS</div>
+        <div class="core-sub" id="core-sub">ONLINE</div>
+      </div>
+    </div>
+
+    <!-- SCAN LINE -->
+    <div class="scan-line"></div>
+
+    <!-- ==================== PANELS ==================== -->
+    <div class="panels-wrap">
+
+      <!-- CHAT AI PANEL -->
+      <div id="panel-chat" class="panel active">
+        <div class="panel-header">
+          <span class="panel-icon">🤖</span>
+          <span>CHAT AI</span>
+          <span class="panel-badge">Hindi Mode</span>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+          <div class="msg jarvis">
+            <div class="msg-avatar">J</div>
+            <div class="msg-bubble">
+              Salaam Abuzar bhai! Main JARVIS PRO hoon — aapki kya madad kar sakta hoon aaj? 🚀
+            </div>
+          </div>
+        </div>
+        <div class="chat-input-row">
+          <input type="text" id="chat-input" placeholder="Kuch bhi poochho..." 
+                 onkeydown="if(event.key==='Enter')sendChat()" />
+          <button class="btn-send" onclick="sendChat()">▶</button>
+        </div>
+      </div>
+
+      <!-- APP BUILDER PANEL -->
+      <div id="panel-builder" class="panel hidden">
+        <div class="panel-header">
+          <span class="panel-icon">📱</span>
+          <span>APP BUILDER</span>
+          <span class="panel-badge">Drag & Drop</span>
+        </div>
+        <div class="builder-wrap">
+
+          <!-- Components Palette -->
+          <div class="comp-palette">
+            <div class="palette-title">COMPONENTS</div>
+            <div class="comp-item" draggable="true" data-type="button" ondragstart="dragStart(event)">
+              <span>🔘</span> Button
+            </div>
+            <div class="comp-item" draggable="true" data-type="text" ondragstart="dragStart(event)">
+              <span>📝</span> Text Label
+            </div>
+            <div class="comp-item" draggable="true" data-type="image" ondragstart="dragStart(event)">
+              <span>🖼</span> Image
+            </div>
+            <div class="comp-item" draggable="true" data-type="input" ondragstart="dragStart(event)">
+              <span>⌨</span> Input Field
+            </div>
+            <div class="comp-item" draggable="true" data-type="header" ondragstart="dragStart(event)">
+              <span>📌</span> Header
+            </div>
+          </div>
+
+          <!-- Phone Preview -->
+          <div class="phone-frame">
+            <div class="phone-notch"></div>
+            <div class="phone-screen" id="phone-screen"
+                 ondragover="dragOver(event)" ondrop="dropComp(event)">
+              <div class="drop-hint" id="drop-hint">⬇ Yahan component drop karo</div>
+            </div>
+            <div class="phone-home-bar"></div>
+          </div>
+
+          <!-- Controls -->
+          <div class="builder-controls">
+            <div class="palette-title">ACTIONS</div>
+            <button class="btn-ctrl" onclick="clearCanvas()">🗑 Clear</button>
+            <button class="btn-ctrl" onclick="generateCode()">⚡ Generate Code</button>
+            <div id="generated-code-wrap" class="hidden">
+              <div class="palette-title" style="margin-top:12px">GENERATED CODE</div>
+              <div class="code-output" id="generated-code"></div>
+              <button class="btn-ctrl" onclick="copyCode()">📋 Copy Code</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- MOVIE MAKER PANEL -->
+      <div id="panel-movie" class="panel hidden">
+        <div class="panel-header">
+          <span class="panel-icon">🎬</span>
+          <span>MOVIE MAKER</span>
+          <span class="panel-badge">Cartoon Style</span>
+        </div>
+        <div class="movie-wrap">
+          <div class="movie-input-area">
+            <label class="movie-label">📖 Apni kahani likho (Hindi/Urdu mein)</label>
+            <textarea id="story-input" placeholder="Ek gaon mein ek jadooi darvaza tha...
+Uske peeche ek aur duniya thi...
+Jahan robots aur insaan saath rehte the..." rows="5"></textarea>
+            <div class="movie-options">
+              <select id="movie-style">
+                <option value="cartoon">🎨 Cartoon Style</option>
+                <option value="anime">⛩ Anime Style</option>
+                <option value="pixar">✨ Pixar Style</option>
+                <option value="comic">💥 Comic Book</option>
+              </select>
+              <input type="number" id="scene-count" value="4" min="2" max="8" style="width:60px" title="Scenes" />
+              <span class="opt-label">scenes</span>
+            </div>
+            <button class="btn-gold movie-btn" onclick="generateMovie()">🎬 SCENE GENERATE KARO</button>
+          </div>
+          <div id="scenes-output" class="scenes-container hidden"></div>
+        </div>
+      </div>
+
+    </div><!-- /panels-wrap -->
+
+    <!-- SETTINGS MODAL -->
+    <div id="settings-modal" class="modal-overlay hidden">
+      <div class="modal-box">
+        <div class="modal-title">⚙ SETTINGS</div>
+        <div class="setup-fields">
+          <div class="field-group">
+            <label>🔑 Groq API Key</label>
+            <input type="password" id="s-groq" />
+          </div>
+          <div class="field-group">
+            <label>✨ Gemini API Key</label>
+            <input type="password" id="s-gemini" />
+          </div>
+          <div class="field-group">
+            <label>🐙 GitHub Token</label>
+            <input type="password" id="s-github" />
+          </div>
+          <div class="field-group">
+            <label>📁 GitHub Repo</label>
+            <input type="text" id="s-repo" />
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn-gold" onclick="saveSettings()">💾 Save</button>
+          <button class="btn-outline" onclick="selfUpdate()">🔄 Self Update (Gemini)</button>
+          <button class="btn-danger" onclick="closeSettings()">✕ Close</button>
+        </div>
+        <div id="update-status" class="update-status hidden"></div>
+      </div>
+    </div>
+
+  </div><!-- /app -->
+
+  <script src="app.js"></script>
+</body>
+</html>
